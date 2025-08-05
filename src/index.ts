@@ -2,18 +2,16 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-
-// Поддержка загрузки .env файла для переменных окружения
 import dotenv from 'dotenv';
-import { getClaims, GetClaimsRequestSchema } from './tools/api/getClaims.js';
 import { getFeedbackById, GetFeedbackByIdRequestSchema } from './tools/api/getFeedbackById.js';
+import { getNewFeedbacksQuestions, GetNewFeedbacksQuestionsRequestSchema } from './tools/api/getNewFeedbacks.js';
 
 dotenv.config();
 
 // Функция для получения apiKey из переменных окружения или аргументов командной строки
 function getApiKey() {
-  if (process.env.WB_FINANCES_OAUTH_TOKEN) {
-    return process.env.WB_FINANCES_OAUTH_TOKEN;
+  if (process.env.WB_COMMUNICATIONS_OAUTH_TOKEN) {
+    return process.env.WB_COMMUNICATIONS_OAUTH_TOKEN;
   }
   const argApiKey = process.argv.find(arg => arg.startsWith('--apiKey='));
   if (argApiKey) {
@@ -51,9 +49,6 @@ const server = new McpServer(
   }
 );
 
-/* ----------------------------------------
- * Регистрация server.registerTool
- * ---------------------------------------- */
 server.registerTool(
   'getFeedbackById',
   {
@@ -76,6 +71,7 @@ server.registerTool(
   }
 );
 
+/* FIXME: требует другого API ключа
 server.registerTool(
   'getClaims',
   {
@@ -90,6 +86,32 @@ server.registerTool(
           {
             type: 'text',
             text: JSON.stringify(result)
+          }
+        ],
+        isError: false
+      };
+    });
+  }
+);
+ */
+
+server.registerTool(
+  'getNewFeedbacksQuestions',
+  {
+    description: 'Метод проверяет наличие непросмотренных вопросов и отзывов от покупателей. ' +
+                 'Если у продавца есть непросмотренные вопросы или отзывы, возвращает true. ' +
+                 'Максимум 1 запрос в секунду для всех методов категории Вопросы и отзывы на один аккаунт продавца.' +
+                 'Если превысить лимит в 3 запроса в секунду, отправка запросов будет заблокирована на 60 секунд',
+    inputSchema: GetNewFeedbacksQuestionsRequestSchema.shape
+  },
+  async (args, _): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const result = await getNewFeedbacksQuestions(args, apiKey);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2)
           }
         ],
         isError: false

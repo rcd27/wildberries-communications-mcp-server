@@ -1,9 +1,6 @@
 import axios from 'axios';
 import { z } from 'zod';
 
-/* ----------------------------------------
- * Zod-схема запроса
- * ---------------------------------------- */
 export const GetFeedbackByIdRequestSchema = z.object({
   id: z
     .string()
@@ -12,9 +9,6 @@ export const GetFeedbackByIdRequestSchema = z.object({
 
 export type GetFeedbackByIdRequest = z.infer<typeof GetFeedbackByIdRequestSchema>;
 
-/* ----------------------------------------
- * Типы ответа
- * ---------------------------------------- */
 export interface FeedbackAnswer {
   text: string;
   state: 'none' | 'wbRu' | 'reviewRequired' | 'rejected';
