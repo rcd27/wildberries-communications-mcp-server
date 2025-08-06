@@ -3,6 +3,12 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import dotenv from 'dotenv';
+import {
+  patchQuestion,
+  PatchQuestionAnswerSchema,
+  PatchQuestionMarkViewedSchema,
+  PatchQuestionRequestSchema
+} from './tools/api/patchQuestion.js';
 import { getFeedbackById, GetFeedbackByIdRequestSchema } from './tools/api/getFeedbackById.js';
 import { getNewFeedbacksQuestions, GetNewFeedbacksQuestionsRequestSchema } from './tools/api/getNewFeedbacks.js';
 import { getQuestions, GetQuestionsQuerySchema } from './tools/api/getQuestions.js';
@@ -213,6 +219,54 @@ server.registerTool(
           }
         ],
         isError: result.error
+      };
+    });
+  }
+);
+
+server.registerTool(
+  'markQuestionAsViewed',
+  {
+    description: 'Позволяет отметить вопрос как просмотренный.' +
+                 '<instruction>Спрашивать пользователя перед действием</instruction>',
+    inputSchema: PatchQuestionMarkViewedSchema.shape,
+  },
+  async (args, _ctx): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const result = await patchQuestion(args, apiKey);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+        isError: result.error,
+      };
+    });
+  }
+);
+
+server.registerTool(
+  'answerQuestion',
+  {
+    description: 'Позволяет отклонить его или ответить на вопрос. В зависимости от параметров запроса.' +
+                 '<instruction>Спрашивать пользователя перед действием</instruction>',
+    inputSchema: PatchQuestionAnswerSchema.shape,
+  },
+  async (args, _ctx): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const result = await patchQuestion(args, apiKey);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+        isError: result.error,
       };
     });
   }
