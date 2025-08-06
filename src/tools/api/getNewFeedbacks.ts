@@ -1,82 +1,60 @@
 import axios from 'axios';
 import { z } from 'zod';
 
-export const GetNewFeedbacksQuestionsRequestSchema = z.object({});
+// Схема ответа с успешным результатом
+export const NewFeedbacksQuestionsDataSchema = z.object({
+  hasNewQuestions: z.boolean().describe('Есть ли непросмотренные вопросы (true есть, false нет)'),
+  hasNewFeedbacks: z.boolean().describe('Есть ли непросмотренные отзывы (true есть, false нет)')
+});
 
-export type GetNewFeedbacksQuestionsRequest = z.infer<typeof GetNewFeedbacksQuestionsRequestSchema>;
+export const GetNewFeedbacksQuestionsResponseSchema = z.object({
+  data: NewFeedbacksQuestionsDataSchema.describe('Данные о непросмотренных вопросах и отзывах'),
+  error: z.boolean().describe('Есть ли ошибка'),
+  errorText: z.string().describe('Описание ошибки'),
+  additionalErrors: z.array(z.string()).nullable().describe('Дополнительные ошибки')
+});
 
-export interface NewFeedbacksQuestionsData {
-  /** Есть ли непросмотренные вопросы (true есть, false нет) */
-  hasNewQuestions: boolean;
-  /** Есть ли непросмотренные отзывы (true есть, false нет) */
-  hasNewFeedbacks: boolean;
-}
+// Схема ответа с ошибкой 403
+export const GetNewFeedbacksQuestionsErrorResponseSchema = z.object({
+  data: z.null().describe('Данные (null при ошибке)'),
+  error: z.boolean().describe('Есть ли ошибка'),
+  errorText: z.string().describe('Описание ошибки'),
+  additionalErrors: z.array(z.string()).nullable().describe('Дополнительные ошибки'),
+  requestId: z.string().describe('ID запроса')
+});
 
-export interface GetNewFeedbacksQuestionsResponse {
-  /** Данные о непросмотренных вопросах и отзывах */
-  data: NewFeedbacksQuestionsData;
-  /** Есть ли ошибка */
-  error: boolean;
-  /** Описание ошибки */
-  errorText: string;
-  /** Дополнительные ошибки */
-  additionalErrors: string[] | null;
-}
+// Схема ответа с ошибкой авторизации 401
+export const AuthorizationErrorResponseSchema = z.object({
+  title: z.string().describe('Заголовок ошибки'),
+  detail: z.string().describe('Детали ошибки'),
+  code: z.string().describe('Внутренний код ошибки'),
+  requestId: z.string().describe('Уникальный ID запроса'),
+  origin: z.string().describe('ID внутреннего сервиса WB'),
+  status: z.number().describe('HTTP статус-код'),
+  statusText: z.string().describe('Расшифровка HTTP статус-кода'),
+  timestamp: z.string().describe('Дата и время запроса')
+});
 
-export interface GetNewFeedbacksQuestionsErrorResponse {
-  /** Данные (null при ошибке) */
-  data: null;
-  /** Есть ли ошибка */
-  error: boolean;
-  /** Описание ошибки */
-  errorText: string;
-  /** Дополнительные ошибки */
-  additionalErrors: string[] | null;
-  /** ID запроса */
-  requestId: string;
-}
+// Схема ответа при превышении лимита запросов 429
+export const RateLimitErrorResponseSchema = z.object({
+  title: z.string().describe('Заголовок ошибки'),
+  detail: z.string().describe('Детали ошибки'),
+  code: z.string().describe('Внутренний код ошибки'),
+  requestId: z.string().describe('Уникальный ID запроса'),
+  origin: z.string().describe('ID внутреннего сервиса WB'),
+  status: z.number().describe('HTTP статус-код'),
+  statusText: z.string().describe('Расшифровка HTTP статус-кода'),
+  timestamp: z.string().datetime().describe('Дата и время запроса')
+});
 
-export interface AuthorizationErrorResponse {
-  /** Заголовок ошибки */
-  title: string;
-  /** Детали ошибки */
-  detail: string;
-  /** Внутренний код ошибки */
-  code: string;
-  /** Уникальный ID запроса */
-  requestId: string;
-  /** ID внутреннего сервиса WB */
-  origin: string;
-  /** HTTP статус-код */
-  status: number;
-  /** Расшифровка HTTP статус-кода */
-  statusText: string;
-  /** Дата и время запроса */
-  timestamp: string;
-}
-
-export interface RateLimitErrorResponse {
-  /** Заголовок ошибки */
-  title: string;
-  /** Детали ошибки */
-  detail: string;
-  /** Внутренний код ошибки */
-  code: string;
-  /** Уникальный ID запроса */
-  requestId: string;
-  /** ID внутреннего сервиса WB */
-  origin: string;
-  /** HTTP статус-код */
-  status: number;
-  /** Расшифровка HTTP статус-кода */
-  statusText: string;
-  /** Дата и время запроса в формате RFC3339 */
-  timestamp: string;
-}
+// Экспорт типов на основе схем
+export type NewFeedbacksQuestionsData = z.infer<typeof NewFeedbacksQuestionsDataSchema>;
+export type GetNewFeedbacksQuestionsResponse = z.infer<typeof GetNewFeedbacksQuestionsResponseSchema>;
+export type GetNewFeedbacksQuestionsErrorResponse = z.infer<typeof GetNewFeedbacksQuestionsErrorResponseSchema>;
+export type AuthorizationErrorResponse = z.infer<typeof AuthorizationErrorResponseSchema>;
+export type RateLimitErrorResponse = z.infer<typeof RateLimitErrorResponseSchema>;
 
 export async function getNewFeedbacksQuestions(
-  // FIXME: не используется
-  args: GetNewFeedbacksQuestionsRequest,
   apiKey: string
 ): Promise<GetNewFeedbacksQuestionsResponse> {
   const response = await axios.get('https://feedbacks-api.wildberries.ru/api/v1/new-feedbacks-questions', {
@@ -85,6 +63,5 @@ export async function getNewFeedbacksQuestions(
     }
   });
 
-  // TODO: Обработать выше описанные ошибки
-  return response.data;
+  return GetNewFeedbacksQuestionsResponseSchema.parse(response.data);
 }

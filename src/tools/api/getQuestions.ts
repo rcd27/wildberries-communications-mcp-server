@@ -5,56 +5,64 @@ import { z } from 'zod';
  * Типы запроса и ответа
  * ---------------------------------------- */
 export const GetQuestionsQuerySchema = z.object({
-  isAnswered: z.boolean().describe('Отвеченные (`true`) или неотвеченные (`false`) вопросы'),
+  isAnswered: z.boolean().describe('Отвеченные (true) или неотвеченные (false) вопросы'),
   take: z
     .number()
     .min(1)
     .max(10000)
-    .describe('Количество запрашиваемых вопросов (макс. 10 000)'),
+    .describe('Количество запрашиваемых вопросов (максимально допустимое значение - 10 000, при этом сумма значений take и skip не должна превышать 10 000)'),
   skip: z
     .number()
     .min(0)
     .max(10000)
-    .describe('Количество вопросов для пропуска (макс. 10 000)'),
+    .describe('Количество вопросов для пропуска (максимально допустимое значение - 10 000, при этом сумма значений take и skip не должна превышать 10 000)'),
   nmId: z.number().optional().describe('Артикул WB'),
-  order: z.enum(['dateAsc', 'dateDesc']).optional().describe('Сортировка по дате'),
-  dateFrom: z.number().optional().describe('Дата начала периода (Unix timestamp)'),
-  dateTo: z.number().optional().describe('Дата конца периода (Unix timestamp)'),
+  order: z.enum(['dateAsc', 'dateDesc']).optional().describe('Сортировка вопросов по дате (dateAsc/dateDesc)'),
+  dateFrom: z.number().optional().describe('Дата начала периода в формате Unix timestamp'),
+  dateTo: z.number().optional().describe('Дата конца периода в формате Unix timestamp'),
 });
 
 const QuestionSchema = z.object({
-  id: z.string(),
-  text: z.string(),
-  createdDate: z.string().describe('Дата и время создания вопроса (ISO)'),
-  state: z.enum(['none', 'wbRu', 'suppliersPortalSynch']),
+  id: z.string().describe('id вопроса'),
+  text: z.string().describe('Текст вопроса'),
+  createdDate: z.string().datetime().describe('Дата и время создания вопроса'),
+  state: z.enum(['none', 'wbRu', 'suppliersPortalSynch']).describe(
+    `Статус вопроса:
+- none - вопрос отклонён продавцом (не отображается на портале покупателей)
+- wbRu - ответ предоставлен, вопрос отображается на сайте покупателей
+- suppliersPortalSynch - новый вопрос`
+  ),
   answer: z
     .object({
-      text: z.string(),
-      editable: z.boolean(),
-      createDate: z.string(),
+      text: z.string().describe('Текст ответа'),
+      editable: z.boolean().describe('Можно ли отредактировать ответ (false - нельзя, true - можно)'),
+      createDate: z.string().datetime().describe('Дата и время создания ответа'),
     })
-    .nullable(),
-  productDetails: z.object({
-    nmId: z.number(),
-    imtId: z.number(),
-    productName: z.string(),
-    supplierArticle: z.string(),
-    supplierName: z.string(),
-    brandName: z.string(),
-  }),
-  wasViewed: z.boolean(),
-  isWarned: z.boolean(),
+    .nullable()
+    .describe('Структура ответа'),
+  productDetails: z
+    .object({
+      nmId: z.number().describe('Артикул WB'),
+      imtId: z.number().describe('ID карточки товара'),
+      productName: z.string().describe('Название товара'),
+      supplierArticle: z.string().describe('Артикул продавца'),
+      supplierName: z.string().describe('Имя продавца'),
+      brandName: z.string().describe('Название бренда'),
+    })
+    .describe('Структура товара'),
+  wasViewed: z.boolean().describe('Просмотрен ли вопрос'),
+  isWarned: z.boolean().describe('Признак подозрительного вопроса. Если true, то вопрос опубликован, но на портале продавцов будет баннер "Сообщение подозрительное"'),
 });
 
 export const GetQuestionsResponseSchema = z.object({
   data: z.object({
-    countUnanswered: z.number(),
-    countArchive: z.number(),
-    questions: z.array(QuestionSchema),
+    countUnanswered: z.number().describe('Количество необработанных вопросов'),
+    countArchive: z.number().describe('Количество обработанных вопросов'),
+    questions: z.array(QuestionSchema).describe('Массив структур вопросов'),
   }),
-  error: z.boolean(),
-  errorText: z.string(),
-  additionalErrors: z.array(z.string()).nullable(),
+  error: z.boolean().describe('Есть ли ошибка'),
+  errorText: z.string().describe('Описание ошибки'),
+  additionalErrors: z.array(z.string()).nullable().describe('Дополнительные ошибки'),
 });
 
 export type GetQuestionsQuery = z.infer<typeof GetQuestionsQuerySchema>;

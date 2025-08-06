@@ -4,7 +4,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import dotenv from 'dotenv';
 import { getFeedbackById, GetFeedbackByIdRequestSchema, GetFeedbackByIdResponse } from './tools/api/getFeedbackById.js';
-import { getNewFeedbacksQuestions, GetNewFeedbacksQuestionsRequestSchema } from './tools/api/getNewFeedbacks.js';
+import { getNewFeedbacksQuestions } from './tools/api/getNewFeedbacks.js';
 import { getQuestionById, GetQuestionByIdRequestSchema } from './tools/api/getQuestionById.js';
 import { getQuestions, GetQuestionsQuerySchema } from './tools/api/getQuestions.js';
 import { getQuestionsCount, GetQuestionsCountQuerySchema } from './tools/api/getQuestionsCount.js';
@@ -108,12 +108,11 @@ server.registerTool(
                  'Если у продавца есть непросмотренные вопросы или отзывы, возвращает true. ' +
                  'Максимум 1 запрос в секунду для всех методов категории Вопросы и отзывы на один аккаунт продавца.' +
                  'Если превысить лимит в 3 запроса в секунду, отправка запросов будет заблокирована на 60 секунд',
-    // FIXME: попробовать убрать, потому что выглядит, как ненужное тело запроса
-    inputSchema: GetNewFeedbacksQuestionsRequestSchema.shape
+    inputSchema: {}
   },
-  async (args, _): Promise<MCPResponse> => {
+  async (_args, _): Promise<MCPResponse> => {
     return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
-      const result = await getNewFeedbacksQuestions(args, apiKey);
+      const result = await getNewFeedbacksQuestions(apiKey);
       return {
         content: [
           {
