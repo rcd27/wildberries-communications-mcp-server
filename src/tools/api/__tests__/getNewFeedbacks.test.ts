@@ -14,7 +14,6 @@ describe('getNewFeedbacksQuestions test', () => {
 
   it('Test integration', async () => {
     const response = await getNewFeedbacksQuestions(
-      {},
       apiKey as string
     );
 

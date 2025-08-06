@@ -4,7 +4,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import dotenv from 'dotenv';
 import { getFeedbackById, GetFeedbackByIdRequestSchema, GetFeedbackByIdResponse } from './tools/api/getFeedbackById.js';
-import { getNewFeedbacksQuestions, GetNewFeedbacksQuestionsRequestSchema } from './tools/api/getNewFeedbacks.js';
+import { getNewFeedbacksQuestions } from './tools/api/getNewFeedbacks.js';
 import { getQuestionById, GetQuestionByIdRequestSchema } from './tools/api/getQuestionById.js';
 import { getQuestions, GetQuestionsQuerySchema } from './tools/api/getQuestions.js';
 import { getQuestionsCount, GetQuestionsCountQuerySchema } from './tools/api/getQuestionsCount.js';
@@ -58,7 +58,9 @@ const server = new McpServer(
 server.registerTool(
   'getFeedbackById',
   {
-    description: 'Метод предоставляет данные отзыва по его ID',
+    description: 'Метод предоставляет данные отзыва по его ID. ' +
+                 'Максимум 1 запрос в секунду для всех методов категории "Вопросы и отзывы" на один аккаунт продавца. ' +
+                 'При превышении лимита в 3 запроса в секунду отправка запросов будет заблокирована на 60 секунд.',
     inputSchema: GetFeedbackByIdRequestSchema.shape
   },
   async (args, _): Promise<MCPResponse> => {
@@ -77,189 +79,23 @@ server.registerTool(
   }
 );
 
-/* FIXME: требует другого API ключа
- server.registerTool(
- 'getClaims',
- {
- description: 'Метод предоставляет заявки покупателей на возврат товаров за последние 14 дней',
- inputSchema: GetClaimsRequestSchema.shape
- },
- async (args, _): Promise<MCPResponse> => {
- return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
- const result = await getClaims(args, apiKey);
- return {
- content: [
- {
- type: 'text',
- text: JSON.stringify(result)
- }
- ],
- isError: false
- };
- });
- }
- );
- */
-
 server.registerTool(
   'getNewFeedbacksQuestions',
   {
     description: 'Метод проверяет наличие непросмотренных вопросов и отзывов от покупателей. ' +
                  'Если у продавца есть непросмотренные вопросы или отзывы, возвращает true. ' +
-                 'Максимум 1 запрос в секунду для всех методов категории Вопросы и отзывы на один аккаунт продавца.' +
-                 'Если превысить лимит в 3 запроса в секунду, отправка запросов будет заблокирована на 60 секунд',
-    // FIXME: попробовать убрать, потому что выглядит, как ненужное тело запроса
-    inputSchema: GetNewFeedbacksQuestionsRequestSchema.shape
-  },
-  async (args, _): Promise<MCPResponse> => {
-    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
-      const result = await getNewFeedbacksQuestions(args, apiKey);
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2)
-          }
-        ],
-        isError: result.error
-      };
-    });
-  }
-);
-
-server.registerTool(
-  'getUnansweredFeedbackCount',
-  {
-    description:
-      'Метод предоставляет количество необработанных отзывов (всего и за сегодня) и среднюю оценку всех отзывов',
+                 'Максимум 1 запрос в секунду для всех методов категории "Вопросы и отзывы" на один аккаунт продавца. ' +
+                 'При превышении лимита в 3 запроса в секунду отправка запросов будет заблокирована на 60 секунд.',
     inputSchema: {}
   },
-  async (_args, _): Promise<MCPResponse> => {
+  async (_, __): Promise<MCPResponse> => {
     return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
-      const stats = await getUnansweredFeedbackCount(apiKey);
+      const result = await getNewFeedbacksQuestions(apiKey);
       return {
         content: [
           {
             type: 'text',
-            text: JSON.stringify(stats, null, 2)
-          }
-        ],
-        isError: stats.error
-      };
-    });
-  }
-);
-
-server.registerTool(
-  'getUnansweredQuestionsCount',
-  {
-    description:
-      'Метод предоставляет количество неотвеченных вопросов (всего и за сегодня).',
-    inputSchema: {}
-  },
-  async (_args, _): Promise<MCPResponse> => {
-    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
-      const stats = await getUnansweredQuestionsCount(apiKey);
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(stats, null, 2)
-          }
-        ],
-        isError: stats.error
-      };
-    });
-  }
-);
-
-server.registerTool(
-  'getQuestionsCount',
-  {
-    description:
-      'Метод предоставляет количество обработанных или необработанных вопросов за заданный период.',
-    inputSchema: GetQuestionsCountQuerySchema.shape
-  },
-  async (args, _ctx): Promise<MCPResponse> => {
-    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
-      const result = await getQuestionsCount(args, apiKey);
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2)
-          }
-        ],
-        isError: result.error
-      };
-    });
-  }
-);
-
-server.registerTool(
-  'getQuestions',
-  {
-    description:
-      'Получает список вопросов покупателей с возможностью фильтрации, сортировки и пагинации.',
-    inputSchema: GetQuestionsQuerySchema.shape
-  },
-  async (args, _ctx): Promise<MCPResponse> => {
-    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
-      const result = await getQuestions(args, apiKey);
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2)
-          }
-        ],
-        isError: result.error
-      };
-    });
-  }
-);
-
-server.registerTool(
-  'markQuestionAsViewed',
-  {
-    description: 'Позволяет отметить вопрос как просмотренный.' +
-                 '<instruction>Спрашивать пользователя перед действием</instruction>',
-    inputSchema: PatchQuestionMarkViewedSchema.shape
-  },
-  async (args, _ctx): Promise<MCPResponse> => {
-    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
-      const result = await patchQuestion(args, apiKey);
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2)
-          }
-        ],
-        isError: result.error
-      };
-    });
-  }
-);
-
-server.registerTool(
-  'answerQuestion',
-  {
-    description: 'Позволяет отклонить его или ответить на вопрос. В зависимости от параметров запроса.' +
-                 '<instruction>Спрашивать пользователя перед действием</instruction>',
-    inputSchema: PatchQuestionAnswerSchema.shape
-  },
-  async (args, _ctx): Promise<MCPResponse> => {
-    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
-      const result = await patchQuestion(args, apiKey);
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2)
+            text: JSON.stringify(result)
           }
         ],
         isError: result.error
@@ -271,18 +107,162 @@ server.registerTool(
 server.registerTool(
   'getQuestionById',
   {
-    description: 'Получить вопрос покупателя по его ID',
+    description: 'Метод предоставляет данные вопроса по его ID. ' +
+                 'Далее вы можете работать с этим вопросом через другие методы API. ' +
+                 'Максимум 1 запрос в секунду для всех методов категории "Вопросы и отзывы" на один аккаунт продавца. ' +
+                 'При превышении лимита в 3 запроса в секунду отправка запросов будет заблокирована на 60 секунд.',
     inputSchema: GetQuestionByIdRequestSchema.shape
   },
-  async (args, _ctx): Promise<MCPResponse> => {
+  async (args, _): Promise<MCPResponse> => {
     return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
       const result = await getQuestionById(args, apiKey);
-
       return {
         content: [
           {
             type: 'text',
-            text: JSON.stringify(result, null, 2)
+            text: JSON.stringify(result)
+          }
+        ],
+        isError: result.error
+      };
+    });
+  }
+);
+
+server.registerTool(
+  'getQuestions',
+  {
+    description: 'Метод предоставляет список вопросов по заданным фильтрам. ' +
+                 'Позволяет получить данные отвеченных и неотвеченных вопросов, сортировать вопросы по дате, ' +
+                 'настроить пагинацию и количество вопросов в ответе. Максимально можно получить 10 000 вопросов в одном ответе. ' +
+                 'Максимум 1 запрос в секунду для всех методов категории "Вопросы и отзывы" на один аккаунт продавца.',
+    inputSchema: GetQuestionsQuerySchema.shape
+  },
+  async (args, _): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const result = await getQuestions(args, apiKey);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result)
+          }
+        ],
+        isError: result.error
+      };
+    });
+  }
+);
+
+server.registerTool(
+  'getQuestionsCount',
+  {
+    description: 'Метод предоставляет количество обработанных или необработанных вопросов за заданный период. ' +
+                 'Максимум 1 запрос в секунду для всех методов категории "Вопросы и отзывы" на один аккаунт продавца. ' +
+                 'При превышении лимита в 3 запроса в секунду отправка запросов будет заблокирована на 60 секунд.',
+    inputSchema: GetQuestionsCountQuerySchema.shape
+  },
+  async (args, _): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const result = await getQuestionsCount(args, apiKey);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result)
+          }
+        ],
+        isError: result.error
+      };
+    });
+  }
+);
+
+server.registerTool(
+  'getUnansweredFeedbackCount',
+  {
+    description: 'Метод предоставляет количество необработанных отзывов за сегодня и за всё время, а также среднюю оценку всех отзывов. ' +
+                 'Максимум 1 запрос в секунду для всех методов категории "Вопросы и отзывы" на один аккаунт продавца.',
+    inputSchema: {}
+  },
+  async (_, __): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const result = await getUnansweredFeedbackCount(apiKey);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result)
+          }
+        ],
+        isError: result.error
+      };
+    });
+  }
+);
+
+server.registerTool(
+  'getUnansweredQuestionsCount',
+  {
+    description: 'Метод предоставляет общее количество неотвеченных вопросов и количество неотвеченных вопросов за сегодня. ' +
+                 'Максимум 1 запрос в секунду для всех методов категории "Вопросы и отзывы" на один аккаунт продавца.',
+    inputSchema: {}
+  },
+  async (_, __): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const result = await getUnansweredQuestionsCount(apiKey);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result)
+          }
+        ],
+        isError: result.error
+      };
+    });
+  }
+);
+
+server.registerTool(
+  'patchQuestionMarkViewed',
+  {
+    description: 'Метод позволяет отметить вопрос как просмотренный. ' +
+                 'Максимум 1 запрос в секунду для всех методов категории "Вопросы и отзывы".',
+    inputSchema: PatchQuestionMarkViewedSchema.shape
+  },
+  async (args, _): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const result = await patchQuestion(args, apiKey);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result)
+          }
+        ],
+        isError: result.error
+      };
+    });
+  }
+);
+
+server.registerTool(
+  'patchQuestionAnswer',
+  {
+    description: 'Метод позволяет ответить на вопрос или отредактировать ответ. ' +
+                 'Отредактировать ответ на вопрос можно 1 раз в течение 60 дней после отправки ответа. ' +
+                 'Максимум 1 запрос в секунду для всех методов категории "Вопросы и отзывы".',
+    inputSchema: PatchQuestionAnswerSchema.shape
+  },
+  async (args, _): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const result = await patchQuestion(args, apiKey);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result)
           }
         ],
         isError: result.error
@@ -294,7 +274,7 @@ server.registerTool(
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('WB Communications MCP Server Running');
+  console.info('WB Communications MCP Server Running');
 }
 
 main().catch((error) => {
