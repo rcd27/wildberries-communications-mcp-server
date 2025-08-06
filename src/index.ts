@@ -3,6 +3,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import dotenv from 'dotenv';
+import { getUnansweredQuestionsCount } from './tools/api/getUnsansweredQuestionsCount.js';
 import { getUnansweredFeedbackCount } from './tools/api/getUnansweredFeedbackCount.js';
 import { getFeedbackById, GetFeedbackByIdRequestSchema } from './tools/api/getFeedbackById.js';
 import { getNewFeedbacksQuestions, GetNewFeedbacksQuestionsRequestSchema } from './tools/api/getNewFeedbacks.js';
@@ -103,6 +104,7 @@ server.registerTool(
                  'Если у продавца есть непросмотренные вопросы или отзывы, возвращает true. ' +
                  'Максимум 1 запрос в секунду для всех методов категории Вопросы и отзывы на один аккаунт продавца.' +
                  'Если превысить лимит в 3 запроса в секунду, отправка запросов будет заблокирована на 60 секунд',
+    // FIXME: попробовать убрать, потому что выглядит, как ненужное тело запроса
     inputSchema: GetNewFeedbacksQuestionsRequestSchema.shape
   },
   async (args, _): Promise<MCPResponse> => {
@@ -139,6 +141,29 @@ server.registerTool(
           }
         ],
         isError: false
+      };
+    });
+  }
+);
+
+server.registerTool(
+  'getUnansweredQuestionsCount',
+  {
+    description:
+      'Метод предоставляет количество неотвеченных вопросов (всего и за сегодня).',
+    inputSchema: {},
+  },
+  async (_args, _): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const stats = await getUnansweredQuestionsCount(apiKey);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(stats, null, 2),
+          },
+        ],
+        isError: false,
       };
     });
   }
