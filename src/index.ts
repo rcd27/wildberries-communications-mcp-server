@@ -5,6 +5,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import dotenv from 'dotenv';
 import { getFeedbackById, GetFeedbackByIdRequestSchema } from './tools/api/getFeedbackById.js';
 import { getNewFeedbacksQuestions, GetNewFeedbacksQuestionsRequestSchema } from './tools/api/getNewFeedbacks.js';
+import { getQuestions, GetQuestionsQuerySchema } from './tools/api/getQuestions.js';
 import { getQuestionsCount, GetQuestionsCountQuerySchema } from './tools/api/getQuestionsCount.js';
 import { getUnansweredFeedbackCount } from './tools/api/getUnansweredFeedbackCount.js';
 import { getUnansweredQuestionsCount } from './tools/api/getUnsansweredQuestionsCount.js';
@@ -184,7 +185,31 @@ server.registerTool(
         content: [
           {
             type: 'text',
-            text: `Количество вопросов: ${result.data}`
+            text: JSON.stringify(result, null, 2)
+          }
+        ],
+        isError: result.error
+      };
+    });
+  }
+);
+
+server.registerTool(
+  'getQuestions',
+  {
+    description:
+      'Получает список вопросов покупателей с возможностью фильтрации, сортировки и пагинации.',
+    inputSchema: GetQuestionsQuerySchema.shape
+  },
+  async (args, _ctx): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const result = await getQuestions(args, apiKey);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2)
           }
         ],
         isError: result.error
