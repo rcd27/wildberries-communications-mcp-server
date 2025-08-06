@@ -3,10 +3,11 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import dotenv from 'dotenv';
-import { getUnansweredQuestionsCount } from './tools/api/getUnsansweredQuestionsCount.js';
-import { getUnansweredFeedbackCount } from './tools/api/getUnansweredFeedbackCount.js';
 import { getFeedbackById, GetFeedbackByIdRequestSchema } from './tools/api/getFeedbackById.js';
 import { getNewFeedbacksQuestions, GetNewFeedbacksQuestionsRequestSchema } from './tools/api/getNewFeedbacks.js';
+import { getQuestionsCount, GetQuestionsCountQuerySchema } from './tools/api/getQuestionsCount.js';
+import { getUnansweredFeedbackCount } from './tools/api/getUnansweredFeedbackCount.js';
+import { getUnansweredQuestionsCount } from './tools/api/getUnsansweredQuestionsCount.js';
 
 dotenv.config();
 
@@ -74,27 +75,27 @@ server.registerTool(
 );
 
 /* FIXME: требует другого API ключа
-server.registerTool(
-  'getClaims',
-  {
-    description: 'Метод предоставляет заявки покупателей на возврат товаров за последние 14 дней',
-    inputSchema: GetClaimsRequestSchema.shape
-  },
-  async (args, _): Promise<MCPResponse> => {
-    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
-      const result = await getClaims(args, apiKey);
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result)
-          }
-        ],
-        isError: false
-      };
-    });
-  }
-);
+ server.registerTool(
+ 'getClaims',
+ {
+ description: 'Метод предоставляет заявки покупателей на возврат товаров за последние 14 дней',
+ inputSchema: GetClaimsRequestSchema.shape
+ },
+ async (args, _): Promise<MCPResponse> => {
+ return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+ const result = await getClaims(args, apiKey);
+ return {
+ content: [
+ {
+ type: 'text',
+ text: JSON.stringify(result)
+ }
+ ],
+ isError: false
+ };
+ });
+ }
+ );
  */
 
 server.registerTool(
@@ -151,7 +152,7 @@ server.registerTool(
   {
     description:
       'Метод предоставляет количество неотвеченных вопросов (всего и за сегодня).',
-    inputSchema: {},
+    inputSchema: {}
   },
   async (_args, _): Promise<MCPResponse> => {
     return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
@@ -160,10 +161,33 @@ server.registerTool(
         content: [
           {
             type: 'text',
-            text: JSON.stringify(stats, null, 2),
-          },
+            text: JSON.stringify(stats, null, 2)
+          }
         ],
-        isError: false,
+        isError: false
+      };
+    });
+  }
+);
+
+server.registerTool(
+  'getQuestionsCount',
+  {
+    description:
+      'Метод предоставляет количество обработанных или необработанных вопросов за заданный период.',
+    inputSchema: GetQuestionsCountQuerySchema.shape
+  },
+  async (args, _ctx): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const result = await getQuestionsCount(args, apiKey);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Количество вопросов: ${result.data}`
+          }
+        ],
+        isError: result.error
       };
     });
   }
