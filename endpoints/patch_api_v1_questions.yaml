@@ -1,0 +1,284 @@
+openapi: 3.0.1
+info:
+  title: Общение с покупателями
+  version: communication
+  description: "<div class=\"description_important\">  \n    Узнать больше об общении\
+    \ с покупателями можно в <a href=\"https://seller.wildberries.ru/instructions/category/f7f6c465-dd12-422d-80a0-a6d9562115d5?goBackOption=prevRoute&categoryId=30817062-14cc-4a82-bc78-3600c2b0685b\"\
+    >справочном центре</a>\n</div>\n\nЧерез методы общения с покупателем вы можете\
+    \ работать с:\n  1. [Вопросами](/openapi/user-communication#tag/Voprosy) и [отзывами](/openapi/user-communication#tag/Otzyvy)\
+    \ покупателей\n  2. [Шаблонами ответов](/openapi/user-communication#tag/Shablony-otvetov)\
+    \ на вопросы и отзывы\n  3. [Чатами с покупателями](/openapi/user-communication#tag/Chat-s-pokupatelyami)\n\
+    \  4. [Заявками покупателей на возврат](/openapi/user-communication#tag/Vozvraty-pokupatelyami)\n"
+  x-file-name: communications
+paths:
+  /api/v1/questions:
+    patch:
+      security:
+      - HeaderApiKey: []
+      summary: Работа с вопросами
+      description: "В зависимости от тела запроса, метод позволяет:\n  - отметить\
+        \ [вопрос](/openapi/user-communication#tag/Voprosy/paths/~1api~1v1~1questions/get)\
+        \ как просмотренный\n  - отклонить вопрос\n  - ответить на вопрос или отредактировать\
+        \ ответ\n\n<div class=\"description_important\">  \n  Отредактировать ответ\
+        \ на вопрос можно 1 раз в течение 60 дней после отправки ответа\n</div>\n\n\
+        <div class=\"description_limit\">  \n  Максимум 1 запрос в <a href=\"/openapi/api-information#tag/Vvedenie/Limity-zaprosov\"\
+        >секунду</a> для всех методов категории <a href=\"/openapi/api-information#tag/Avtorizaciya/Kak-sozdat-token\"\
+        >Вопросы и отзывы</a> на один аккаунт продавца.<br>\n  Если превысить лимит\
+        \ в 3 запроса в секунду, отправка запросов будет заблокирована на 60 секунд\n\
+        </div>\n"
+      tags:
+      - Вопросы
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+                required:
+                - id
+                - wasViewed
+                properties:
+                  id:
+                    description: Id вопроса
+                    type: string
+                    example: n5um6IUBQOOSTxXoo0gV
+                  wasViewed:
+                    description: Просмотрен (`true`), не просмотрен (`false`)
+                    type: boolean
+                    example: true
+              - type: object
+                required:
+                - id
+                - answer
+                - state
+                properties:
+                  id:
+                    type: string
+                    description: Id вопроса
+                    example: n5um6IUBQOOSTxXoo0gV
+                  answer:
+                    type: object
+                    required:
+                    - text
+                    properties:
+                      text:
+                        type: string
+                        description: Текст ответа
+                        example: текст ответа
+                  state:
+                    type: string
+                    description: "Статус вопроса:\n  - `none` - вопрос отклонён продавцом\
+                      \ (такой вопрос не отображается на портале покупателей)\n  -\
+                      \ `wbRu` - ответ предоставлен, вопрос отображается на сайте\
+                      \ покупателей.\n"
+            examples:
+              ViewQuestion:
+                description: Просмотреть вопрос
+                value:
+                  id: n5um6IUBQOOSTxXoo0gV
+                  wasViewed: true
+              RejectQuestion:
+                description: Отклонить вопрос
+                value:
+                  id: n5um6IUBQOOSTxXoo0gV
+                  answer:
+                    text: текст ответа
+                  state: none
+              AnswerQuestionOrEditAnswer:
+                description: Ответить на вопрос или отредактировать ответ
+                value:
+                  id: n5um6IUBQOOSTxXoo0gV
+                  answer:
+                    text: текст ответа
+                  state: wbRu
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    nullable: true
+                  error:
+                    type: boolean
+                    description: Есть ли ошибка
+                  errorText:
+                    type: string
+                    description: Описание ошибки
+                  additionalErrors:
+                    description: Дополнительные ошибки
+                    nullable: true
+                    type: array
+                    items:
+                      type: string
+              example:
+                data: null
+                error: false
+                errorText: ''
+                additionalErrors: null
+        '400':
+          description: Неправильный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responsefeedbackErr'
+              examples:
+                FeedbackErr400:
+                  $ref: '#/components/examples/FeedbackErr400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          description: Доступ запрещён
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responsefeedbackErr'
+              examples:
+                FeedbackErr403:
+                  $ref: '#/components/examples/FeedbackErr403'
+        '404':
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responsefeedbackErr'
+              examples:
+                FeedbackErr404:
+                  $ref: '#/components/examples/FeedbackErr404'
+        '429':
+          $ref: '#/components/responses/429'
+components:
+  schemas:
+    responsefeedbackErr:
+      type: object
+      properties:
+        data:
+          type: object
+          nullable: true
+        error:
+          description: Есть ли ошибка
+          type: boolean
+        errorText:
+          description: Описание ошибки
+          type: string
+        additionalErrors:
+          description: Дополнительные ошибки
+          nullable: true
+          type: array
+          items:
+            type: string
+        requestId:
+          description: ''
+          type: string
+  responses:
+    '429':
+      description: Слишком много запросов
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                description: Заголовок ошибки
+              detail:
+                type: string
+                description: Детали ошибки
+              code:
+                type: string
+                description: Внутренний код ошибки
+              requestId:
+                type: string
+                description: Уникальный ID запроса
+              origin:
+                type: string
+                description: ID внутреннего сервиса WB
+              status:
+                type: number
+                description: HTTP статус-код
+              statusText:
+                type: string
+                description: Расшифровка HTTP статус-кода
+              timestamp:
+                type: string
+                format: RFC3339
+                description: Дата и время запроса
+          example:
+            title: too many requests
+            detail: limited by c122a060-a7fb-4bb4-abb0-32fd4e18d489
+            code: 07e4668e-ac2242c5c8c5-[UK-4dx7JUdskGZ]
+            requestId: 9d3c02cc698f8b041c661a7c28bed293
+            origin: s2s-api-auth-catalog
+            status: 429
+            statusText: Too Many Requests
+            timestamp: '2024-09-30T06:52:38Z'
+    '401':
+      description: Пользователь не авторизован
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                description: Заголовок ошибки
+              detail:
+                type: string
+                description: Детали ошибки
+              code:
+                type: string
+                description: Внутренний код ошибки
+              requestId:
+                type: string
+                description: Уникальный ID запроса
+              origin:
+                type: string
+                description: ID внутреннего сервиса WB
+              status:
+                type: number
+                description: HTTP статус-код
+              statusText:
+                type: string
+                description: Расшифровка HTTP статус-кода
+              timestamp:
+                type: string
+                format: RFC3339
+                description: Дата и время запроса
+          example:
+            title: unauthorized
+            detail: 'token problem; token is malformed: could not base64 decode signature:
+              illegal base64 data at input byte 84'
+            code: 07e4668e--a53a3d31f8b0-[UK-oWaVDUqNrKG]; 03bce=277; 84bd353bf-75
+            requestId: 7b80742415072fe8b6b7f7761f1d1211
+            origin: s2s-api-auth-catalog
+            status: 401
+            statusText: Unauthorized
+            timestamp: '2024-09-30T06:52:38Z'
+  examples:
+    FeedbackErr404:
+      description: Не найдено
+      value:
+        data: null
+        error: true
+        errorText: Не найден отзыв
+        additionalErrors: null
+        requestId: 734c9ea8-39e5-45c9-8cad-f03c13f733e9
+    FeedbackErr403:
+      description: Доступ запрещён
+      value:
+        data: null
+        error: true
+        errorText: Ошибка авторизации
+        additionalErrors: null
+        requestId: 734c9ea8-39e5-45c9-8cad-f03c13f733e9
+    FeedbackErr400:
+      description: Неправильный запрос
+      value:
+        data: null
+        error: true
+        errorText: Something went wrong
+        additionalErrors: null
+        requestId: 734c9ea8-39e5-45c9-8cad-f03c13f733e9

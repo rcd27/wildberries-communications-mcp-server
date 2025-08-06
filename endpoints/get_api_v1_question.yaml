@@ -1,0 +1,291 @@
+openapi: 3.0.1
+info:
+  title: Общение с покупателями
+  version: communication
+  description: "<div class=\"description_important\">  \n    Узнать больше об общении\
+    \ с покупателями можно в <a href=\"https://seller.wildberries.ru/instructions/category/f7f6c465-dd12-422d-80a0-a6d9562115d5?goBackOption=prevRoute&categoryId=30817062-14cc-4a82-bc78-3600c2b0685b\"\
+    >справочном центре</a>\n</div>\n\nЧерез методы общения с покупателем вы можете\
+    \ работать с:\n  1. [Вопросами](/openapi/user-communication#tag/Voprosy) и [отзывами](/openapi/user-communication#tag/Otzyvy)\
+    \ покупателей\n  2. [Шаблонами ответов](/openapi/user-communication#tag/Shablony-otvetov)\
+    \ на вопросы и отзывы\n  3. [Чатами с покупателями](/openapi/user-communication#tag/Chat-s-pokupatelyami)\n\
+    \  4. [Заявками покупателей на возврат](/openapi/user-communication#tag/Vozvraty-pokupatelyami)\n"
+  x-file-name: communications
+paths:
+  /api/v1/question:
+    get:
+      security:
+      - HeaderApiKey: []
+      summary: Получить вопрос по ID
+      description: "Метод предоставляет данные [вопроса](/openapi/user-communication#tag/Voprosy/paths/~1api~1v1~1questions/get)\
+        \ по его ID. Далее вы можете [работать с этим вопросом](/openapi/user-communication#tag/Voprosy/paths/~1api~1v1~1questions/patch).\n\
+        \n<div class=\"description_limit\">  \n  Максимум 1 запрос в <a href=\"/openapi/api-information#tag/Vvedenie/Limity-zaprosov\"\
+        >секунду</a> для всех методов категории <a href=\"/openapi/api-information#tag/Avtorizaciya/Kak-sozdat-token\"\
+        >Вопросы и отзывы</a> на один аккаунт продавца.<br>\n  Если превысить лимит\
+        \ в 3 запроса в секунду, отправка запросов будет заблокирована на 60 секунд\n\
+        </div>\n"
+      tags:
+      - Вопросы
+      parameters:
+      - name: id
+        in: query
+        required: true
+        description: ID вопроса
+        schema:
+          type: string
+          example: ljAVapEBL38RyMdRln61
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: ID вопроса
+                      text:
+                        type: string
+                        description: Текст вопроса
+                      createdDate:
+                        type: string
+                        format: date-time
+                        description: Дата и время создания вопроса
+                      state:
+                        type: string
+                        description: "Статус вопроса:\n  - `none` - вопрос отклонён\
+                          \ продавцом (такой вопрос не отображается на портале покупателей)\n\
+                          \  - `wbRu` - ответ предоставлен, вопрос отображается на\
+                          \ сайте покупателей\n  - `suppliersPortalSynch` - новый\
+                          \ вопрос\n"
+                      answer:
+                        description: Структура ответа
+                        type: object
+                        properties:
+                          text:
+                            type: string
+                            description: Текст ответа
+                          editable:
+                            type: boolean
+                            description: Можно ли отредактировать ответ (`false` -
+                              нельзя, `true` - можно)
+                          createDate:
+                            type: string
+                            format: date-time
+                            description: Дата и время создания ответа
+                      productDetails:
+                        type: object
+                        description: Структура товара
+                        properties:
+                          nmId:
+                            type: integer
+                            description: Артикул WB
+                          imtId:
+                            type: integer
+                            description: ID карточки товара
+                          productName:
+                            type: string
+                            description: Название товара
+                          supplierArticle:
+                            type: string
+                            description: Артикул продавца
+                          supplierName:
+                            type: string
+                            description: Имя продавца
+                          brandName:
+                            type: string
+                            description: Название бренда
+                      wasViewed:
+                        type: boolean
+                        description: Просмотрен ли вопрос
+                      isWarned:
+                        type: boolean
+                        description: "Признак подозрительного вопроса.<br> \nЕсли\
+                          \ `true`, то вопрос опубликован, но на портале продавцов\
+                          \ вы увидите баннер **Сообщение подозрительное**\n"
+                  error:
+                    type: boolean
+                    description: Есть ли ошибка
+                    example: false
+                  errorText:
+                    type: string
+                    description: Описание ошибки
+                    example: ''
+                  additionalErrors:
+                    description: Дополнительные ошибки
+                    nullable: true
+                    type: array
+                    items:
+                      type: string
+                    example: null
+              example:
+                data:
+                  countUnanswered: 24
+                  countArchive: 508
+                  questions:
+                  - id: 2ncBtX4B9I0UHoornoqG
+                    text: Question text
+                    createdDate: '2022-02-01T11:18:08.769513469Z'
+                    state: suppliersPortalSynch
+                    answer: null
+                    productDetails:
+                      imtId: 11157265
+                      nmId: 14917842
+                      productName: Coffee
+                      supplierArticle: '123401'
+                      supplierName: ' ГП Реклама и услуги'
+                      brandName: Nescafe
+                    wasViewed: false
+                    isWarned: false
+                error: false
+                errorText: ''
+                additionalErrors: null
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          description: Доступ запрещён
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responsefeedbackErr'
+              examples:
+                FeedbackErr403:
+                  $ref: '#/components/examples/FeedbackErr403'
+        '422':
+          description: Ошибка обработки параметров запроса
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responsefeedbackErr'
+              examples:
+                responseGetQestionByIdErrEx:
+                  $ref: '#/components/examples/ResponseGetQestionByIdErrEx'
+        '429':
+          $ref: '#/components/responses/429'
+components:
+  schemas:
+    responsefeedbackErr:
+      type: object
+      properties:
+        data:
+          type: object
+          nullable: true
+        error:
+          description: Есть ли ошибка
+          type: boolean
+        errorText:
+          description: Описание ошибки
+          type: string
+        additionalErrors:
+          description: Дополнительные ошибки
+          nullable: true
+          type: array
+          items:
+            type: string
+        requestId:
+          description: ''
+          type: string
+  responses:
+    '429':
+      description: Слишком много запросов
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                description: Заголовок ошибки
+              detail:
+                type: string
+                description: Детали ошибки
+              code:
+                type: string
+                description: Внутренний код ошибки
+              requestId:
+                type: string
+                description: Уникальный ID запроса
+              origin:
+                type: string
+                description: ID внутреннего сервиса WB
+              status:
+                type: number
+                description: HTTP статус-код
+              statusText:
+                type: string
+                description: Расшифровка HTTP статус-кода
+              timestamp:
+                type: string
+                format: RFC3339
+                description: Дата и время запроса
+          example:
+            title: too many requests
+            detail: limited by c122a060-a7fb-4bb4-abb0-32fd4e18d489
+            code: 07e4668e-ac2242c5c8c5-[UK-4dx7JUdskGZ]
+            requestId: 9d3c02cc698f8b041c661a7c28bed293
+            origin: s2s-api-auth-catalog
+            status: 429
+            statusText: Too Many Requests
+            timestamp: '2024-09-30T06:52:38Z'
+    '401':
+      description: Пользователь не авторизован
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                description: Заголовок ошибки
+              detail:
+                type: string
+                description: Детали ошибки
+              code:
+                type: string
+                description: Внутренний код ошибки
+              requestId:
+                type: string
+                description: Уникальный ID запроса
+              origin:
+                type: string
+                description: ID внутреннего сервиса WB
+              status:
+                type: number
+                description: HTTP статус-код
+              statusText:
+                type: string
+                description: Расшифровка HTTP статус-кода
+              timestamp:
+                type: string
+                format: RFC3339
+                description: Дата и время запроса
+          example:
+            title: unauthorized
+            detail: 'token problem; token is malformed: could not base64 decode signature:
+              illegal base64 data at input byte 84'
+            code: 07e4668e--a53a3d31f8b0-[UK-oWaVDUqNrKG]; 03bce=277; 84bd353bf-75
+            requestId: 7b80742415072fe8b6b7f7761f1d1211
+            origin: s2s-api-auth-catalog
+            status: 401
+            statusText: Unauthorized
+            timestamp: '2024-09-30T06:52:38Z'
+  examples:
+    FeedbackErr403:
+      description: Доступ запрещён
+      value:
+        data: null
+        error: true
+        errorText: Ошибка авторизации
+        additionalErrors: null
+        requestId: 734c9ea8-39e5-45c9-8cad-f03c13f733e9
+    ResponseGetQestionByIdErrEx:
+      description: Не удалось получить вопрос по ID
+      value:
+        data: null
+        error: true
+        errorText: Невозможно получить вопрос по id
+        additionalErrors: null
+        requestId: 87a2fe4d-d28b-4bae-b824-c0f498c72702

@@ -1,0 +1,379 @@
+openapi: 3.0.1
+info:
+  title: Общение с покупателями
+  version: communication
+  description: "<div class=\"description_important\">  \n    Узнать больше об общении\
+    \ с покупателями можно в <a href=\"https://seller.wildberries.ru/instructions/category/f7f6c465-dd12-422d-80a0-a6d9562115d5?goBackOption=prevRoute&categoryId=30817062-14cc-4a82-bc78-3600c2b0685b\"\
+    >справочном центре</a>\n</div>\n\nЧерез методы общения с покупателем вы можете\
+    \ работать с:\n  1. [Вопросами](/openapi/user-communication#tag/Voprosy) и [отзывами](/openapi/user-communication#tag/Otzyvy)\
+    \ покупателей\n  2. [Шаблонами ответов](/openapi/user-communication#tag/Shablony-otvetov)\
+    \ на вопросы и отзывы\n  3. [Чатами с покупателями](/openapi/user-communication#tag/Chat-s-pokupatelyami)\n\
+    \  4. [Заявками покупателей на возврат](/openapi/user-communication#tag/Vozvraty-pokupatelyami)\n"
+  x-file-name: communications
+paths:
+  /api/v1/claims:
+    get:
+      security:
+      - HeaderApiKey: []
+      tags:
+      - Возвраты покупателями
+      summary: Заявки покупателей на возврат
+      description: "Метод предоставляет заявки покупателей на возврат товаров за последние\
+        \ 14 дней. Вы можете [отвечать на эти заявки](/openapi/user-communication#tag/Vozvraty-pokupatelyami/paths/~1api~1v1~1claim/patch).\n\
+        \n<div class=\"description_limit\">  \n  Максимум 20 запросов в <a href=\"\
+        /openapi/api-information#tag/Vvedenie/Limity-zaprosov\">минуту</a> на один\
+        \ аккаунт продавца\n</div>\n"
+      parameters:
+      - $ref: '#/components/parameters/is_archive'
+      - $ref: '#/components/parameters/id'
+      - $ref: '#/components/parameters/limit'
+      - $ref: '#/components/parameters/offset'
+      - $ref: '#/components/parameters/nm_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/GetClaimsSuccessResponse'
+        '400':
+          $ref: '#/components/responses/Error400GetClaims'
+        '401':
+          $ref: '#/components/responses/401'
+        '429':
+          $ref: '#/components/responses/429'
+components:
+  parameters:
+    limit:
+      in: query
+      name: limit
+      description: Количество заявок в ответе. По умолчанию `50`
+      schema:
+        type: integer
+        format: uint
+        minimum: 1
+        maximum: 200
+        example: 50
+    offset:
+      in: query
+      name: offset
+      description: После какого элемента выдавать данные. По умолчанию `0`
+      schema:
+        type: integer
+        format: uint
+        minimum: 0
+        example: 0
+    is_archive:
+      in: query
+      name: is_archive
+      description: "Состояние заявки:\n  * `false` — на рассмотрении\n  * `true` —\
+        \ в архиве\n"
+      required: true
+      schema:
+        type: boolean
+        example: true
+    id:
+      in: query
+      name: id
+      description: ID заявки
+      schema:
+        type: string
+        format: UUID
+        example: fe3e9337-e9f9-423c-8930-946a8ebef80
+    nm_id:
+      in: query
+      name: nm_id
+      description: Артикул WB
+      schema:
+        type: integer
+        example: 196320101
+  responses:
+    '429':
+      description: Слишком много запросов
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                description: Заголовок ошибки
+              detail:
+                type: string
+                description: Детали ошибки
+              code:
+                type: string
+                description: Внутренний код ошибки
+              requestId:
+                type: string
+                description: Уникальный ID запроса
+              origin:
+                type: string
+                description: ID внутреннего сервиса WB
+              status:
+                type: number
+                description: HTTP статус-код
+              statusText:
+                type: string
+                description: Расшифровка HTTP статус-кода
+              timestamp:
+                type: string
+                format: RFC3339
+                description: Дата и время запроса
+          example:
+            title: too many requests
+            detail: limited by c122a060-a7fb-4bb4-abb0-32fd4e18d489
+            code: 07e4668e-ac2242c5c8c5-[UK-4dx7JUdskGZ]
+            requestId: 9d3c02cc698f8b041c661a7c28bed293
+            origin: s2s-api-auth-catalog
+            status: 429
+            statusText: Too Many Requests
+            timestamp: '2024-09-30T06:52:38Z'
+    '401':
+      description: Пользователь не авторизован
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                description: Заголовок ошибки
+              detail:
+                type: string
+                description: Детали ошибки
+              code:
+                type: string
+                description: Внутренний код ошибки
+              requestId:
+                type: string
+                description: Уникальный ID запроса
+              origin:
+                type: string
+                description: ID внутреннего сервиса WB
+              status:
+                type: number
+                description: HTTP статус-код
+              statusText:
+                type: string
+                description: Расшифровка HTTP статус-кода
+              timestamp:
+                type: string
+                format: RFC3339
+                description: Дата и время запроса
+          example:
+            title: unauthorized
+            detail: 'token problem; token is malformed: could not base64 decode signature:
+              illegal base64 data at input byte 84'
+            code: 07e4668e--a53a3d31f8b0-[UK-oWaVDUqNrKG]; 03bce=277; 84bd353bf-75
+            requestId: 7b80742415072fe8b6b7f7761f1d1211
+            origin: s2s-api-auth-catalog
+            status: 401
+            statusText: Unauthorized
+            timestamp: '2024-09-30T06:52:38Z'
+    Error400GetClaims:
+      description: Неправильный запрос
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                description: ID ошибки
+                example: Invalid query params
+              detail:
+                description: Описание ошибки
+                type: string
+                example: 'Failed to deserialize query string: missing field `is_archive`'
+              requestId:
+                description: ID запроса
+                type: string
+                example: e0aedc10-9789-49c1-9a83-d8422b4703dc
+    GetClaimsSuccessResponse:
+      description: Успешно
+      content:
+        application/json:
+          schema:
+            type: object
+            example:
+              claims:
+              - id: fe3e9337-e9f9-423c-8930-946a8ebef80
+                claim_type: 1
+                status: 2
+                status_ex: 8
+                nm_id: 196320101
+                user_comment: Длина провода не соответствует описанию
+                wb_comment: "Продавец одобрил вашу заявку на возврат. В течение 14\
+                  \ дней принесите товар в определённый пункт выдачи — всё зависит\
+                  \ от того, как вы получали заказ:\r\n\r\n∙ В пункте выдачи. Тогда\
+                  \ нужно будет вернуть в тот же пункт по тому же адресу. \r\n∙ Курьером.\
+                  \ Зайдите в раздел «Покупки» на сайте — там будет адрес пункта,\
+                  \ в который нужно принести товар.\r\n\r\nВозьмите с собой пакет\
+                  \ со штрих-кодом, в котором был товар. Если вы его потеряли или\
+                  \ выбросили — ничего страшного, мы всё равно сможем провести возврат.\
+                  \ Но в будущем, пожалуйста, сохраняйте этот пакет. \r\n\r\nДеньги\
+                  \ придут на вашу карту или счёт в течение 10 дней после возврата\
+                  \ товара на склад.\r\n\r\nЕсли у вас крупногабаритный товар, то\
+                  \ для его возврата вызовите курьера через раздел «Доставки»."
+                dt: '2024-03-26T17:06:12.245611'
+                imt_name: Кабель 0.5 м, 3797
+                order_dt: '2020-10-27T05:18:56'
+                dt_update: '2024-05-10T18:01:06.999613'
+                photos:
+                - //photos.wbstatic.net/claim/fe3e9337-e9f9-423c-8930-946a8ebef80/1.webp
+                - //photos.wbstatic.net/claim/fe3e9337-e9f9-423c-8930-946a8ebef80/2.webp
+                video_paths:
+                - //video.wbstatic.net/claim/fe3e9337-e9f9-423c-8930-946a8ebef80/1.mp4
+                actions:
+                - autorefund1
+                - approve1
+                price: 157
+                currency_code: '643'
+                srid: v5o_7143225816503318733.0.0
+              total: 31
+            properties:
+              claims:
+                type: array
+                description: Заявки
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ID заявки
+                      format: UUID
+                    claim_type:
+                      type: integer
+                      description: "Источник заявки:\n  * `1` — портал покупателей\n\
+                        \  * `3` — чат\n"
+                    status:
+                      type: integer
+                      description: "Решение по возврату покупателю:\n  * `0` — на\
+                        \ рассмотрении\n  * `1` — отказ\n  * `2` — одобрено\n"
+                    status_ex:
+                      type: integer
+                      description: "Статус товара:\n  * `0` — заявка на рассмотрении\n\
+                        \  * `1` — товар остается у покупателя (Заявка отклонена)\n\
+                        \  * `2` — покупатель сдает товар на WB, товар отправляется\
+                        \ в утиль                           \n  * `5` — товар остается\
+                        \ у покупателя (Заявка одобрена)\n  * `8` — товар будет возвращён\
+                        \ в реализацию после проверки WB \n  * `10` — товар возвращается\
+                        \ продавцу \n"
+                    nm_id:
+                      type: integer
+                      description: Артикул WB
+                    user_comment:
+                      type: string
+                      maxLength: 1000
+                      description: Комментарий покупателя
+                    wb_comment:
+                      nullable: true
+                      type: string
+                      maxLength: 10000
+                      description: Ответ покупателю
+                    dt:
+                      type: string
+                      format: date-time
+                      description: Дата и время оформления заявки покупателем
+                    imt_name:
+                      nullable: true
+                      type: string
+                      description: Название товара
+                    order_dt:
+                      type: string
+                      format: date-time
+                      description: Дата и время заказа
+                    dt_update:
+                      type: string
+                      format: date-time
+                      description: Дата и время рассмотрения заявки. Для нерассмотренной
+                        заявки — дата и время оформления
+                    photos:
+                      type: array
+                      description: Фотографии из заявки покупателя
+                      minItems: 0
+                      maxItems: 10
+                      items:
+                        type: string
+                        format: WEBP
+                    video_paths:
+                      type: array
+                      description: Видео из заявки покупателя
+                      minItems: 0
+                      maxItems: 1
+                      items:
+                        type: string
+                        format: MP4
+                    actions:
+                      type: array
+                      description: "Варианты [ответа продавца на заявку](./user-communication#tag/Vozvraty-pokupatelyami/paths/~1api~1v1~1claim/patch).<br>Отклонённые\
+                        \ заявки можно пересмотреть. Если массив пуст, с заявкой работать\
+                        \ нельзя.\n  * `approve1` — одобрить с проверкой брака.<br>Деньги\
+                        \ вернутся покупателю после возврата товара. Товар будет проверен\
+                        \ на складе. При подтверждении брака/ошибки вложения товар\
+                        \ будет отправлен продавцу. Если брак/ошибка вложения не подтвердятся,\
+                        \ товар будет возвращён в продажу.<br>Неприменимо при схеме\
+                        \ <strong>[Самовывоз](./in-store-pickup)</strong>. \n  * `approve2`\
+                        \ — одобрить и забрать товар.<br> Деньги вернутся покупателю\
+                        \ после возврата товара. Товар будет отправлен продавцу.<br>Неприменимо\
+                        \ при схеме <strong>[Самовывоз](./in-store-pickup)</strong>.\n\
+                        \  * `autorefund1` — одобрить без возврата товара.<br> Товар\
+                        \ останется у покупателя. Деньги за него будут возвращены\
+                        \ покупателю без возврата товара.\n  * `reject1` — отклонить\
+                        \ с шаблоном ответа: <details><summary><strong>Брак не обнаружен</strong></summary>Здравствуйте!<br>Продавец\
+                        \ рассмотрел и отклонил вашу заявку: он не нашёл брак, который\
+                        \ вы описали, на фото или видео.<br>Если брак производственный,\
+                        \ можете: — попробовать решить вопрос напрямую в чате с продавцом\
+                        \ — в разделе «Покупки» нажмите на три точки возле товара\
+                        \ и выберите «Задать вопрос продавцу», — обратиться в сервисный\
+                        \ центр или независимую экспертизу, чтобы получить заключение\
+                        \ о браке. После экспертизы отправьте скан заключения, создав\
+                        \ новую заявку на проверку товара.<br>Если дефект непроизводственный,\
+                        \ то можно оспорить решение продавца, для этого откройте в\
+                        \ приложении раздел «Возврат товара по браку» или на сайте\
+                        \ раздел «Брак или другая проблема», выберите заявку, нажмите\
+                        \ кнопку «Оспорить решение» и напишите, почему вы не согласны.\
+                        \ Мы всё проверим и напишем вам.</details>\n  * `reject2`\
+                        \ — отклонить с шаблоном ответа: <details><summary><strong>Добавить\
+                        \ фото/видео</strong></summary>Здравствуйте!<br>К сожалению,\
+                        \ продавец не смог подтвердить брак, повреждение или несоответствие\
+                        \ описанию. Отправьте новую заявку и проверьте, что дефект\
+                        \ виден на фото и видео, а сами они хорошего качества. Напомним,\
+                        \ что нужно прикрепить к заявке:<br>1. Фото товара целиком.<br>2.\
+                        \ Фото и видео брака.<br>3. Фото с биркой или другой маркировкой\
+                        \ товара.<br>4. Фото упаковки со штрих-кодом, если она осталась.<br>5.\
+                        \ Комментарий, в котором подробно описано, что сломано и как\
+                        \ вы это выяснили.</details>\n  * `reject3` — отклонить с\
+                        \ шаблоном ответа: <details><summary><strong>Направить в сервисный\
+                        \ центр</strong></summary>Здравствуйте!<br>Мы внимательно\
+                        \ прочитали заявку, проверили фото и видео. К сожалению, мы\
+                        \ не нашли брак, повреждение или несоответствие описанию в\
+                        \ вашем товаре.<br>Обратитесь напрямую в сервисный центр —\
+                        \ его адрес и контакты есть на сайте производителя или на\
+                        \ гарантийном талоне. Там проведут окончательную проверку\
+                        \ товара и выдадут вам акт. Если центр нашёл брак, то отправьте\
+                        \ этот акт в чат на нашем сайте.</details>\n  * `rejectcustom`\
+                        \ — отклонить с комментарием.<br>Комментарий передаётся в\
+                        \ параметре `comment`.\n  * `approvecc1` — одобрить заявку\
+                        \ с возвратом товара в магазин продавца.<br>Можно передать\
+                        \ комментарий (например, телефон для связи или время работы\
+                        \ своего отдела возвратов) в параметре `comment`. По итогу\
+                        \ возврата необходимо ответить на заявку с `\"action\":\"\
+                        confirmreturngoodcc1\"` или `\"action\":\"rejectcustom\"`.<br>Применимо\
+                        \ только при схеме <strong>[Самовывоз](./in-store-pickup)</strong>.\
+                        \ \n  * `confirmreturngoodcc1` — подтвердить приёмку товара\
+                        \ от покупателя.<br>Применимо только при схеме <strong>[Самовывоз](./in-store-pickup)</strong>.\n"
+                      items:
+                        type: string
+                    price:
+                      type: number
+                      description: Фактическая цена с учетом всех скидок. Взимается
+                        с покупателя
+                    currency_code:
+                      type: string
+                      description: Код валюты цены
+                    srid:
+                      type: string
+                      description: Уникальный ID заказа, по товару которого создана
+                        заявка
+              total:
+                type: integer
+                description: Количество заявок, соответствующих параметрам запроса.
+                  Без учёта `limit` и `offset`
