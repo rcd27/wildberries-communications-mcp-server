@@ -3,18 +3,14 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import dotenv from 'dotenv';
-import {
-  patchQuestion,
-  PatchQuestionAnswerSchema,
-  PatchQuestionMarkViewedSchema,
-  PatchQuestionRequestSchema
-} from './tools/api/patchQuestion.js';
-import { getFeedbackById, GetFeedbackByIdRequestSchema } from './tools/api/getFeedbackById.js';
+import { getFeedbackById, GetFeedbackByIdRequestSchema, GetFeedbackByIdResponse } from './tools/api/getFeedbackById.js';
 import { getNewFeedbacksQuestions, GetNewFeedbacksQuestionsRequestSchema } from './tools/api/getNewFeedbacks.js';
+import { getQuestionById, GetQuestionByIdRequestSchema } from './tools/api/getQuestionById.js';
 import { getQuestions, GetQuestionsQuerySchema } from './tools/api/getQuestions.js';
 import { getQuestionsCount, GetQuestionsCountQuerySchema } from './tools/api/getQuestionsCount.js';
 import { getUnansweredFeedbackCount } from './tools/api/getUnansweredFeedbackCount.js';
 import { getUnansweredQuestionsCount } from './tools/api/getUnsansweredQuestionsCount.js';
+import { patchQuestion, PatchQuestionAnswerSchema, PatchQuestionMarkViewedSchema } from './tools/api/patchQuestion.js';
 
 dotenv.config();
 
@@ -67,7 +63,7 @@ server.registerTool(
   },
   async (args, _): Promise<MCPResponse> => {
     return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
-      const feedback = await getFeedbackById(args, apiKey);
+      const feedback: GetFeedbackByIdResponse = await getFeedbackById(args, apiKey);
       return {
         content: [
           {
@@ -75,7 +71,7 @@ server.registerTool(
             text: JSON.stringify(feedback, null, 2)
           }
         ],
-        isError: false
+        isError: feedback.error
       };
     });
   }
@@ -125,7 +121,7 @@ server.registerTool(
             text: JSON.stringify(result, null, 2)
           }
         ],
-        isError: false
+        isError: result.error
       };
     });
   }
@@ -148,7 +144,7 @@ server.registerTool(
             text: JSON.stringify(stats, null, 2)
           }
         ],
-        isError: false
+        isError: stats.error
       };
     });
   }
@@ -171,7 +167,7 @@ server.registerTool(
             text: JSON.stringify(stats, null, 2)
           }
         ],
-        isError: false
+        isError: stats.error
       };
     });
   }
@@ -229,7 +225,7 @@ server.registerTool(
   {
     description: 'Позволяет отметить вопрос как просмотренный.' +
                  '<instruction>Спрашивать пользователя перед действием</instruction>',
-    inputSchema: PatchQuestionMarkViewedSchema.shape,
+    inputSchema: PatchQuestionMarkViewedSchema.shape
   },
   async (args, _ctx): Promise<MCPResponse> => {
     return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
@@ -239,10 +235,10 @@ server.registerTool(
         content: [
           {
             type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
+            text: JSON.stringify(result, null, 2)
+          }
         ],
-        isError: result.error,
+        isError: result.error
       };
     });
   }
@@ -253,7 +249,7 @@ server.registerTool(
   {
     description: 'Позволяет отклонить его или ответить на вопрос. В зависимости от параметров запроса.' +
                  '<instruction>Спрашивать пользователя перед действием</instruction>',
-    inputSchema: PatchQuestionAnswerSchema.shape,
+    inputSchema: PatchQuestionAnswerSchema.shape
   },
   async (args, _ctx): Promise<MCPResponse> => {
     return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
@@ -263,10 +259,33 @@ server.registerTool(
         content: [
           {
             type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
+            text: JSON.stringify(result, null, 2)
+          }
         ],
-        isError: result.error,
+        isError: result.error
+      };
+    });
+  }
+);
+
+server.registerTool(
+  'getQuestionById',
+  {
+    description: 'Получить вопрос покупателя по его ID',
+    inputSchema: GetQuestionByIdRequestSchema.shape
+  },
+  async (args, _ctx): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const result = await getQuestionById(args, apiKey);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2)
+          }
+        ],
+        isError: result.error
       };
     });
   }
