@@ -3,6 +3,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import dotenv from 'dotenv';
+import { getUnansweredFeedbackCount } from './tools/api/getUnansweredFeedbackCount.js';
 import { getFeedbackById, GetFeedbackByIdRequestSchema } from './tools/api/getFeedbackById.js';
 import { getNewFeedbacksQuestions, GetNewFeedbacksQuestionsRequestSchema } from './tools/api/getNewFeedbacks.js';
 
@@ -112,6 +113,29 @@ server.registerTool(
           {
             type: 'text',
             text: JSON.stringify(result, null, 2)
+          }
+        ],
+        isError: false
+      };
+    });
+  }
+);
+
+server.registerTool(
+  'getUnansweredFeedbackCount',
+  {
+    description:
+      'Метод предоставляет количество необработанных отзывов (всего и за сегодня) и среднюю оценку всех отзывов',
+    inputSchema: {}
+  },
+  async (_args, _): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const stats = await getUnansweredFeedbackCount(apiKey);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(stats, null, 2)
           }
         ],
         isError: false
