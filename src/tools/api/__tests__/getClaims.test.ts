@@ -3,7 +3,7 @@ import { getClaims } from '../getClaims.js';
 
 dotenv.config();
 
-describe('getClaims test', () => {
+describe('getClaims integration test', () => {
   const apiKey = process.env.WB_COMMUNICATIONS_OAUTH_TOKEN;
 
   beforeAll(() => {
@@ -12,7 +12,7 @@ describe('getClaims test', () => {
     }
   });
 
-  it('Test integration', async () => {
+  it('Should fetch list of claims', async () => {
     const response = await getClaims(
       {
         is_archive: false,
@@ -22,6 +22,7 @@ describe('getClaims test', () => {
       apiKey as string
     );
 
-    expect(response).not.toBeNull();
+    expect(Array.isArray(response.claims)).toBe(true);
+    expect(typeof response.total).toBe('number');
   });
 });
