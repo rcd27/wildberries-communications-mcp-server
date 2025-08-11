@@ -8,18 +8,15 @@ export const GetFeedbacksQuerySchema = z.object({
     .describe('Обработанные отзывы (true) или необработанные отзывы (false)'),
   nmId: z
     .number()
-    .int()
     .optional()
     .describe('Артикул WB'),
   take: z
     .number()
-    .int()
     .min(1)
     .max(5000)
     .describe('Количество отзывов (max. 5000)'),
   skip: z
     .number()
-    .int()
     .min(0)
     .max(199990)
     .describe('Количество отзывов для пропуска (max. 199990)'),
@@ -44,51 +41,65 @@ export const GetFeedbacksQuerySchema = z.object({
 });
 
 export const FeedbackSchema = z.object({
-  id: z.string().describe('Уникальный идентификатор отзыва'),
-  userName: z.string().describe('Имя пользователя, оставившего отзыв'),
-  productDetails: z.object({
-    imtId: z.number().describe('ID карточки товара'),
-    nmId: z.number().describe('Артикул WB'),
-    productName: z.string().describe('Название товара'),
-    supplierArticle: z.string().nullable().describe('Артикул продавца'),
-    supplierName: z.string().nullable().describe('Имя продавца'),
-    brandName: z.string().nullable().describe('Бренд товара'),
-    size: z.string().describe('Размер товара')
-  }),
-  productValuation: z.number().min(1).max(5).describe('Оценка товара от 1 до 5'),
-  createdDate: z.string().datetime().describe('Дата создания отзыва в формате ISO 8601'),
-  text: z.string().nullable().describe('Текст отзыва'),
-  pros: z.string().describe('Достоинства товара'),
-  cons: z.string().describe('Недостатки товара'),
+  id: z.string().optional().nullable().describe('ID отзыва'),
+  text: z.string().optional().nullable().describe('Текст отзыва'),
+  pros: z.string().optional().nullable().describe('Достоинства товара'),
+  cons: z.string().optional().nullable().describe('Недостатки товара'),
+  productValuation: z.number().int().optional().nullable().describe('Оценка товара'),
+  createdDate: z.string().datetime().optional().nullable().describe('Дата и время создания отзыва'),
   answer: z.object({
-    text: z.string().describe('Текст ответа'),
-    state: z.enum(['none', 'wbRu', 'reviewRequired', 'rejected']).describe(
+    text: z.string().optional().nullable().describe('Текст ответа'),
+    state: z.enum(['none', 'wbRu', 'reviewRequired', 'rejected']).optional().nullable().describe(
       'Статус ответа:\n' +
       '- none - новый\n' +
       '- wbRu - отображается на сайте\n' +
       '- reviewRequired - ответ проходит проверку\n' +
       '- rejected - ответ отклонён'
     ),
-    editable: z.boolean().describe('Можно ли отредактировать ответ')
-  }).nullable().describe('Ответ продавца на отзыв'),
-  matchingSize: z.string().describe('Соответствие заявленного размера реальному'),
-  state: z.enum(['none', 'wbRu']).describe('Статус отзыва'),
+    editable: z.boolean().optional().nullable().describe('Можно ли отредактировать ответ')
+  }).nullable().optional().nullable().describe('Структура ответа'),
+  state: z.enum(['none', 'wbRu']).optional().nullable().describe('Статус отзыва'),
+  productDetails: z.object({
+    nmId: z.number().int().optional().nullable().describe('Артикул WB'),
+    imtId: z.number().int().optional().nullable().describe('ID карточки товара'),
+    productName: z.string().optional().nullable().describe('Название товара'),
+    supplierArticle: z.string().nullable().optional().nullable().describe('Артикул продавца'),
+    supplierName: z.string().nullable().optional().nullable().describe('Имя продавца'),
+    brandName: z.string().nullable().optional().nullable().describe('Бренд товара'),
+    size: z.string().optional().nullable().describe('Размер товара')
+  }).optional().nullable().describe('Структура товара'),
   photoLinks: z.array(z.object({
-    fullSize: z.string().describe('Адрес фотографии полного размера'),
-    miniSize: z.string().describe('Адрес фотографии маленького размера')
-  })).nullable().describe('Массив фотографий'),
+    fullSize: z.string().optional().nullable().describe('Адрес фотографии полного размера'),
+    miniSize: z.string().optional().nullable().describe('Адрес фотографии маленького размера')
+  })).nullable().optional().nullable().describe('Массив структур фотографий'),
   video: z.object({
-    previewImage: z.string().describe('Ссылка на обложку видео'),
-    link: z.string().describe('Ссылка на файл плейлиста видео'),
-    durationSec: z.number().describe('Общая продолжительность видео')
-  }).nullable().describe('Видео отзыва'),
-  wasViewed: z.boolean().describe('Просмотрен ли отзыв')
-});
+    previewImage: z.string().optional().nullable().describe('Ссылка на обложку видео'),
+    link: z.string().optional().nullable().describe('Ссылка на файл плейлиста видео'),
+    durationSec: z.number().int().optional().nullable().describe('Общая продолжительность видео')
+  }).nullable().optional().nullable().describe('Структура видео'),
+  wasViewed: z.boolean().optional().nullable().describe('Просмотрен ли отзыв'),
+  userName: z.string().optional().nullable().describe('Имя автора отзыва'),
+  matchingSize: z.string().optional().nullable().describe('Соответствие заявленного размера реальному'),
+  isAbleSupplierFeedbackValuation: z.boolean().optional().nullable().describe('Доступна ли продавцу возможность оставить жалобу на отзыв'),
+  supplierFeedbackValuation: z.number().int().optional().nullable().describe('Ключ причины жалобы на отзыв'),
+  isAbleSupplierProductValuation: z.boolean().optional().nullable().describe('Доступна ли продавцу возможность сообщить о проблеме с товаром'),
+  supplierProductValuation: z.number().int().optional().nullable().describe('Ключ проблемы с товаром'),
+  isAbleReturnProductOrders: z.boolean().optional().nullable().describe('Доступна ли товару опция возврата'),
+  returnProductOrdersDate: z.string().optional().nullable().describe('Дата и время ответа на запрос возврата'),
+  bables: z.array(z.string()).nullable().optional().nullable().describe('Список тегов покупателя'),
+  lastOrderShkId: z.number().int().optional().nullable().describe('Штрихкод единицы товара'),
+  lastOrderCreatedAt: z.string().optional().nullable().describe('Дата покупки'),
+  color: z.string().optional().nullable().describe('Цвет товара'),
+  subjectId: z.number().int().optional().nullable().describe('ID предмета'),
+  subjectName: z.string().optional().nullable().describe('Название предмета'),
+  parentFeedbackId: z.string().nullable().optional().nullable().describe('ID начального отзыва'),
+  childFeedbackId: z.string().nullable().optional().nullable().describe('ID дополненного отзыва')
+}).passthrough(); // passthrough разрешает дополнительные поля
 
 export const GetFeedbacksResponseSchema = createResponseSchema(z.object({
-  countUnanswered: z.number().describe('Количество необработанных отзывов'),
-  countArchive: z.number().describe('Количество обработанных отзывов'),
-  feedbacks: z.array(FeedbackSchema).describe('Список отзывов')
+  countUnanswered: z.number().int().describe('Количество необработанных отзывов'),
+  countArchive: z.number().int().describe('Количество обработанных отзывов'),
+  feedbacks: z.array(FeedbackSchema).describe('Массив отзывов')
 }));
 
 export type GetFeedbacksQuery = z.infer<typeof GetFeedbacksQuerySchema>;

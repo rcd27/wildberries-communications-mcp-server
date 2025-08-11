@@ -40,7 +40,7 @@ function getApiKey() {
   return undefined;
 }
 
-type MCPResponse = {content: any, isError: boolean}
+type MCPResponse = {content: any[], isError: boolean}
 
 async function withApiKey(block: (apiKey: string) => Promise<MCPResponse>): Promise<MCPResponse> {
   const apiKey = getApiKey();
@@ -49,7 +49,7 @@ async function withApiKey(block: (apiKey: string) => Promise<MCPResponse>): Prom
       content: [
         {
           type: 'text',
-          content: 'API key is required. Please set WB_COMMUNICATIONS_OAUTH_TOKEN environment ' +
+          text: 'API key is required. Please set WB_COMMUNICATIONS_OAUTH_TOKEN environment ' +
                    'variable or provide --apiKey argument.'
         }
       ],
@@ -85,7 +85,7 @@ server.registerTool(
         content: [
           {
             type: 'text',
-            content: JSON.stringify(feedback, null, 2)
+            text: JSON.stringify(feedback, null, 2)
           }
         ],
         isError: feedback.error
@@ -110,7 +110,7 @@ server.registerTool(
         content: [
           {
             type: 'text',
-            text: JSON.stringify(result)
+            text: JSON.stringify(result, null, 2)
           }
         ],
         isError: result.error
@@ -135,7 +135,7 @@ server.registerTool(
         content: [
           {
             type: 'text',
-            text: JSON.stringify(result)
+            text: JSON.stringify(result, null, 2)
           }
         ],
         isError: result.error
@@ -159,7 +159,7 @@ server.registerTool(
         content: [
           {
             type: 'text',
-            text: JSON.stringify(result)
+            text: JSON.stringify(result, null, 2)
           }
         ],
         isError: result.error
@@ -182,7 +182,7 @@ server.registerTool(
         content: [
           {
             type: 'text',
-            text: JSON.stringify(result)
+            text: JSON.stringify(result, null, 2)
           }
         ],
         isError: result.error
@@ -205,7 +205,7 @@ server.registerTool(
         content: [
           {
             type: 'text',
-            text: JSON.stringify(result)
+            text: JSON.stringify(result, null, 2)
           }
         ],
         isError: result.error
@@ -228,7 +228,7 @@ server.registerTool(
         content: [
           {
             type: 'text',
-            text: JSON.stringify(result)
+            text: JSON.stringify(result, null, 2)
           }
         ],
         isError: result.error
@@ -252,7 +252,7 @@ server.registerTool(
         content: [
           {
             type: 'text',
-            text: JSON.stringify(result)
+            text: JSON.stringify(result, null, 2)
           }
         ],
         isError: result.error
@@ -278,7 +278,7 @@ server.registerTool(
         content: [
           {
             type: 'text',
-            text: JSON.stringify(result)
+            text: JSON.stringify(result, null, 2)
           }
         ],
         isError: result.error
@@ -302,7 +302,7 @@ server.registerTool(
         content: [
           {
             type: 'text',
-            text: JSON.stringify(result)
+            text: JSON.stringify(result, null, 2)
           }
         ],
         isError: result.error
@@ -350,7 +350,7 @@ server.registerTool(
         content: [
           {
             type: 'text',
-            content: JSON.stringify(res)
+            text: JSON.stringify(res, null, 2)
           }
         ],
         isError: res.error
@@ -378,7 +378,7 @@ server.registerTool(
         content: [
           {
             type: 'text',
-            content: JSON.stringify(res)
+            text: JSON.stringify(res, null, 2)
           }
         ],
         isError: res.error
@@ -408,7 +408,7 @@ server.registerTool(
         content: [
           {
             type: 'text',
-            content: JSON.stringify(res)
+            text: JSON.stringify(res, null, 2)
           }
         ],
         isError: res.error

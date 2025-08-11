@@ -40,7 +40,7 @@ const FeedbackVideoSchema = z.object({
 });
 
 const FeedbackSchema = z.object({
-  id: z.number().describe('ID отзыва'),
+  id: z.string().describe('ID отзыва'),
   userName: z.string().describe('Имя автора отзыва'),
   pros: z.string().describe('Достоинства товара'),
   cons: z.string().describe('Недостатки товара'),
@@ -60,7 +60,7 @@ const FeedbackSchema = z.object({
                                    .describe('Доступна ли продавцу возможность сообщить о проблеме с товаром'),
   supplierProductValuation: z.number().describe('Ключ проблемы с товаром'),
   isAbleReturnProductOrders: z.boolean().describe('Доступна ли товару опция возврата'),
-  returnProductOrdersDate: z.string().describe('Дата и время ответа на запрос возврата'),
+  returnProductOrdersDate: z.string().optional().nullable().describe('Дата и время ответа на запрос возврата'),
   bables: z.array(z.string()).nullable().describe('Список тегов покупателя'),
   lastOrderShkId: z.number().describe('Штрихкод единицы товара'),
   lastOrderCreatedAt: z.string().describe('Дата покупки'),
