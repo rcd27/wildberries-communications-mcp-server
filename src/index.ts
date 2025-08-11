@@ -3,7 +3,15 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import dotenv from 'dotenv';
+import { z } from 'zod';
 import { getFeedbackById, GetFeedbackByIdRequestSchema } from './tools/api/getFeedbackById.js';
+import { getFeedbacks, GetFeedbacksQuerySchema } from './tools/api/getFeedbacks.js';
+import {
+  getArchivedFeedbacks,
+  GetArchivedFeedbacksQuery,
+  GetArchivedFeedbacksQuerySchema
+} from './tools/api/getFeedbacksArchive.js';
+import { getFeedbacksCount, GetFeedbacksCountQuerySchema } from './tools/api/getFeedbacksCount.js';
 import { getNewFeedbacksQuestions } from './tools/api/getNewFeedbacks.js';
 import {
   getQuestionById,
@@ -12,9 +20,11 @@ import {
 } from './tools/api/getQuestionById.js';
 import { getQuestions, GetQuestionsQuerySchema } from './tools/api/getQuestions.js';
 import { getQuestionsCount, GetQuestionsCountQuerySchema } from './tools/api/getQuestionsCount.js';
+import { getSupplierValuations } from './tools/api/getSupplierValuations.js';
 import { getUnansweredFeedbackCount } from './tools/api/getUnansweredFeedbackCount.js';
 import { getUnansweredQuestionsCount } from './tools/api/getUnsansweredQuestionsCount.js';
 import { patchQuestion, PatchQuestionAnswerSchema, PatchQuestionMarkViewedSchema } from './tools/api/patchQuestion.js';
+import { postFeedbackAnswer, PostFeedbackAnswerRequestSchema } from './tools/api/postFeedbackAnswer.js';
 
 dotenv.config();
 
@@ -272,6 +282,136 @@ server.registerTool(
           }
         ],
         isError: result.error
+      };
+    });
+  }
+);
+
+server.registerTool(
+  'getFeedbacksCount',
+  {
+    description: 'Метод предоставляет количество обработанных или необработанных отзывов за заданный период. ' +
+                 'Максимум 1 запрос в секунду для всех методов категории "Вопросы и отзывы" на один аккаунт продавца. ' +
+                 'При превышении лимита в 3 запроса в секунду отправка запросов будет заблокирована на 60 секунд.',
+    inputSchema: GetFeedbacksCountQuerySchema.shape
+  },
+  async (args, _): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const result = await getFeedbacksCount(args, apiKey);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result)
+          }
+        ],
+        isError: result.error
+      };
+    });
+  }
+);
+
+server.registerTool(
+  'postFeedbackAnswer',
+  {
+    description: 'Позволяет продавцу ответить на отзыв покупателя. ' +
+                 'ID отзыва не валидируется — ошибка не вернётся при его некорректности.',
+    inputSchema: PostFeedbackAnswerRequestSchema.shape
+  },
+  async (args, _): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const result = await postFeedbackAnswer(apiKey, args);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'Ответ отправлен'
+          }
+        ],
+        isError: false
+      };
+    });
+  }
+);
+
+server.registerTool(
+  'getFeedbacks',
+  {
+    description:
+      'Метод позволяет получить список отзывов по фильтрам (например, только с ответами, сортировка по дате, пропуск и лимит). ' +
+      'Максимум 1 запрос в секунду для всех методов категории "Вопросы и отзывы" на один аккаунт продавца. ' +
+      'При превышении лимита в 3 запроса в секунду отправка запросов будет заблокирована на 60 секунд.',
+    inputSchema: GetFeedbacksQuerySchema.shape
+  },
+  async (args, _): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const res = await getFeedbacks(args, apiKey);
+      return {
+        content: [
+          {
+            type: 'text',
+            content: JSON.stringify(res)
+          }
+        ],
+        isError: res.error
+      };
+    });
+  }
+);
+
+server.registerTool(
+  'getArchivedFeedbacks',
+  {
+    description:
+      'Метод возвращает список архивных отзывов. Отзыв считается архивным если: ' +
+      '— на отзыв получен ответ; ' +
+      '— на отзыв не получен ответ в течение 30 дней; ' +
+      '— в отзыве нет текста и фото. ' +
+      'Максимум 1 запрос в секунду для всех методов категории "Вопросы и отзывы" на один аккаунт продавца. ' +
+      'При превышении лимита в 3 запроса в секунду отправка запросов будет заблокирована на 60 секунд.',
+    inputSchema: GetArchivedFeedbacksQuerySchema.shape
+  },
+  async (args, _): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const res = await getArchivedFeedbacks(args as GetArchivedFeedbacksQuery, apiKey);
+      return {
+        content: [
+          {
+            type: 'text',
+            content: JSON.stringify(res)
+          }
+        ],
+        isError: res.error
+      };
+    });
+  }
+);
+
+server.registerTool(
+  'getSupplierValuations',
+  {
+    description:
+      'Получить списки причин жалоб на отзыв и проблем с товаром. ' +
+      'Максимум 1 запрос в секунду на аккаунт. ' +
+      'Если превысить лимит 3 запроса в секунду, блокировка на 60 секунд.',
+    inputSchema: z
+      .object({
+        locale: z.string().optional().describe('Выбор языка значений (ru, en, zh)')
+      })
+      .describe('Параметры запроса')
+      .shape
+  },
+  async (args, _): Promise<MCPResponse> => {
+    return withApiKey(async (apiKey: string): Promise<MCPResponse> => {
+      const res = await getSupplierValuations(args.locale, apiKey);
+      return {
+        content: [
+          {
+            type: 'text',
+            content: JSON.stringify(res)
+          }
+        ],
+        isError: res.error
       };
     });
   }
