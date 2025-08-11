@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { getNewFeedbacksQuestions } from '../getNewFeedbacks.js';
+import { getNewFeedbacksQuestions } from '../getNewFeedbacksQuestions.js';
 
 dotenv.config();
 

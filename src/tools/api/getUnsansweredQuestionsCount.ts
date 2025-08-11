@@ -1,15 +1,13 @@
 import axios from 'axios';
 import { z } from 'zod';
+import { createResponseSchema } from '../../createResponseSchema.js';
 
-export const GetUnansweredQuestionsCountResponseSchema = z.object({
-  data: z.object({
+export const GetUnansweredQuestionsCountResponseSchema = createResponseSchema(
+  z.object({
     countUnanswered: z.number().describe('Количество неотвеченных вопросов'),
-    countUnansweredToday: z.number().describe('Количество неотвеченных вопросов за сегодня'),
-  }),
-  error: z.boolean().describe('Есть ли ошибка'),
-  errorText: z.string().describe('Описание ошибки'),
-  additionalErrors: z.array(z.string()).nullable().describe('Дополнительные ошибки'),
-});
+    countUnansweredToday: z.number().describe('Количество неотвеченных вопросов за сегодня')
+  })
+);
 
 export type GetUnansweredQuestionsCountResponse = z.infer<typeof GetUnansweredQuestionsCountResponseSchema>;
 
@@ -18,8 +16,8 @@ export async function getUnansweredQuestionsCount(apiKey: string): Promise<GetUn
     'https://feedbacks-api.wildberries.ru/api/v1/questions/count-unanswered',
     {
       headers: {
-        Authorization: apiKey,
-      },
+        Authorization: apiKey
+      }
     }
   );
 

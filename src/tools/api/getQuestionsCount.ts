@@ -1,45 +1,24 @@
 import axios from 'axios';
 import { z } from 'zod';
+import { createResponseSchema } from '../../createResponseSchema.js';
 
 /* ----------------------------------------
  * Типы запроса и ответа
  * ---------------------------------------- */
 export const GetQuestionsCountQuerySchema = z.object({
-  dateFrom: z
-    .number()
-    .int()
-    .describe('Дата начала периода в формате Unix timestamp'),
+  dateFrom: z.number().int().describe('Дата начала периода в формате Unix timestamp'),
   // .example(1688465092),
-  dateTo: z
-    .number()
-    .int()
-    .describe('Дата конца периода в формате Unix timestamp'),
+  dateTo: z.number().int().describe('Дата конца периода в формате Unix timestamp'),
   // .example(1688465092),
-  isAnswered: z
-    .boolean()
-    .optional()
-    .describe('Обработанные вопросы (true) или необработанные вопросы (false). Если не указать, вернутся' +
-              ' обработанные вопросы.')
+  isAnswered: z.boolean().optional().describe(
+    'Обработанные вопросы (true) или необработанные вопросы (false). Если не указать, вернутся' +
+    ' обработанные вопросы.')
   // .example(false),
 });
 
-export const GetQuestionsCountResponseSchema = z.object({
-  data: z
-    .number()
-    .int()
-    .nonnegative()
-    .describe('Количество вопросов'),
-  error: z
-    .boolean()
-    .describe('Есть ли ошибка'),
-  errorText: z
-    .string()
-    .describe('Описание ошибки'),
-  additionalErrors: z
-    .array(z.string())
-    .nullable()
-    .describe('Дополнительные ошибки')
-});
+export const GetQuestionsCountResponseSchema = createResponseSchema(
+  z.number().int().nonnegative().describe('Количество вопросов')
+);
 
 export type GetQuestionsCountQuery = z.infer<typeof GetQuestionsCountQuerySchema>;
 export type GetQuestionsCountResponse = z.infer<typeof GetQuestionsCountResponseSchema>;

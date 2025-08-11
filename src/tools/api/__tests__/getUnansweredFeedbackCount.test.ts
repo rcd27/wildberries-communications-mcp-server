@@ -11,7 +11,7 @@ describe('getUnansweredFeedbackCount test', () => {
     }
   });
 
-  it('Test integration', async () => {
+  it('should return unanswered feedback count', async () => {
     const response = await getUnansweredFeedbackCount(apiKey as string);
 
     expect(response).not.toBeNull();

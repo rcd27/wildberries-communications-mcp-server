@@ -12,7 +12,7 @@ import {
   GetArchivedFeedbacksQuerySchema
 } from './tools/api/getFeedbacksArchive.js';
 import { getFeedbacksCount, GetFeedbacksCountQuerySchema } from './tools/api/getFeedbacksCount.js';
-import { getNewFeedbacksQuestions } from './tools/api/getNewFeedbacks.js';
+import { getNewFeedbacksQuestions } from './tools/api/getNewFeedbacksQuestions.js';
 import {
   getQuestionById,
   GetQuestionByIdRequestSchema,

@@ -1,19 +1,17 @@
 import axios from 'axios';
 import { z } from 'zod';
+import { createResponseSchema } from '../../createResponseSchema.js';
 
 /* ----------------------------------------
  * Тип ответа
  * ---------------------------------------- */
-export const GetUnansweredFeedbackCountResponseSchema = z.object({
-  data: z.object({
+export const GetUnansweredFeedbackCountResponseSchema = createResponseSchema(
+  z.object({
     countUnanswered: z.number().int().describe('Количество необработанных отзывов'),
     countUnansweredToday: z.number().int().describe('Количество необработанных отзывов за сегодня'),
-    valuation: z.string().describe('Средняя оценка всех отзывов'),
-  }),
-  error: z.boolean().describe('Есть ли ошибка'),
-  errorText: z.string().describe('Описание ошибки'),
-  additionalErrors: z.array(z.string()).nullable().describe('Дополнительные ошибки'),
-});
+    valuation: z.string().describe('Средняя оценка всех отзывов')
+  })
+);
 
 export type GetUnansweredFeedbackCountResponse = z.infer<typeof GetUnansweredFeedbackCountResponseSchema>;
 

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { z } from 'zod';
+import { createResponseSchema } from '../../createResponseSchema.js';
 
 // Схема ответа с успешным результатом
 export const NewFeedbacksQuestionsDataSchema = z.object({
@@ -7,12 +8,7 @@ export const NewFeedbacksQuestionsDataSchema = z.object({
   hasNewFeedbacks: z.boolean().describe('Есть ли непросмотренные отзывы (true есть, false нет)')
 });
 
-export const GetNewFeedbacksQuestionsResponseSchema = z.object({
-  data: NewFeedbacksQuestionsDataSchema.describe('Данные о непросмотренных вопросах и отзывах'),
-  error: z.boolean().describe('Есть ли ошибка'),
-  errorText: z.string().describe('Описание ошибки'),
-  additionalErrors: z.array(z.string()).nullable().describe('Дополнительные ошибки')
-});
+export const GetNewFeedbacksQuestionsResponseSchema = createResponseSchema(NewFeedbacksQuestionsDataSchema);
 
 // Схема ответа с ошибкой 403
 export const GetNewFeedbacksQuestionsErrorResponseSchema = z.object({

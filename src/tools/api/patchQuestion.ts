@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { createResponseSchema } from '../../createResponseSchema.js';
 import { z } from 'zod';
 
 /* ----------------------------------------
@@ -43,13 +44,9 @@ export const PatchQuestionRequestSchema = z.union([
 /* ----------------------------------------
  * Тип ответа
  * ---------------------------------------- */
-export const PatchQuestionResponseSchema = z.object({
-  data: z.null(),
-  error: z.boolean().describe('Есть ли ошибка'),
-  errorText: z.string().describe('Описание ошибки'),
-  additionalErrors: z.array(z.string()).nullable().describe('Дополнительные ошибки'),
-  requestId: z.string().optional().describe('ID запроса'),
-});
+export const PatchQuestionResponseSchema = createResponseSchema(
+  z.null()
+);
 
 export type PatchQuestionRequest = z.infer<typeof PatchQuestionRequestSchema>;
 export type PatchQuestionResponse = z.infer<typeof PatchQuestionResponseSchema>;

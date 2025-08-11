@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { z } from 'zod';
+import { createResponseSchema } from '../../createResponseSchema.js';
 
 export const GetFeedbackByIdRequestSchema = z.object({
   id: z.string().describe('ID отзыва')
@@ -9,11 +10,11 @@ export const GetFeedbackByIdRequestSchema = z.object({
 const FeedbackAnswerSchema = z.object({
   text: z.string().describe('Текст ответа'),
   state: z.enum(['none', 'wbRu', 'reviewRequired', 'rejected'])
-    .describe('Статус:\n  ' +
-              '- `none` - новый\n  ' +
-              '- `wbRu` - отображается на сайте\n ' +
-              '- `reviewRequired` - ответ проходит проверку\n ' +
-              '- `rejected` - ответ отклонён\n'),
+          .describe('Статус:\n  ' +
+                    '- `none` - новый\n  ' +
+                    '- `wbRu` - отображается на сайте\n ' +
+                    '- `reviewRequired` - ответ проходит проверку\n ' +
+                    '- `rejected` - ответ отклонён\n'),
   editable: z.boolean().describe('Можно ли отредактировать ответ')
 });
 
@@ -55,7 +56,8 @@ const FeedbackSchema = z.object({
   wasViewed: z.boolean().describe('Просмотрен ли отзыв'),
   isAbleSupplierFeedbackValuation: z.boolean().describe('Доступна ли продавцу возможность оставить жалобу на отзыв'),
   supplierFeedbackValuation: z.number().describe('Ключ причины жалобы на отзыв'),
-  isAbleSupplierProductValuation: z.boolean().describe('Доступна ли продавцу возможность сообщить о проблеме с товаром'),
+  isAbleSupplierProductValuation: z.boolean()
+                                   .describe('Доступна ли продавцу возможность сообщить о проблеме с товаром'),
   supplierProductValuation: z.number().describe('Ключ проблемы с товаром'),
   isAbleReturnProductOrders: z.boolean().describe('Доступна ли товару опция возврата'),
   returnProductOrdersDate: z.string().describe('Дата и время ответа на запрос возврата'),
@@ -69,12 +71,7 @@ const FeedbackSchema = z.object({
   childFeedbackId: z.string().nullable().describe('ID дополненного отзыва')
 });
 
-export const GetFeedbackByIdResponseSchema = z.object({
-  data: FeedbackSchema,
-  error: z.boolean().describe('Есть ли ошибка'),
-  errorText: z.string().describe('Описание ошибки'),
-  additionalErrors: z.array(z.string()).nullable().describe('Дополнительные ошибки')
-});
+export const GetFeedbackByIdResponseSchema = createResponseSchema(FeedbackSchema);
 
 export type GetFeedbackByIdRequest = z.infer<typeof GetFeedbackByIdRequestSchema>;
 export type GetFeedbackByIdResponse = z.infer<typeof GetFeedbackByIdResponseSchema>;

@@ -47,7 +47,7 @@ npx @modelcontextprotocol/inspector node ./build/index.js
 - [getFeedbacksArchive.ts](src/tools/api/getFeedbacksArchive.ts) - возвращает список архивных отзывов
 - [getFeedbacksCount.ts](src/tools/api/getFeedbacksCount.ts) - количество обработанных или необработанных отзывов за 
   заданный период
-- [getNewFeedbacks.ts](src/tools/api/getNewFeedbacks.ts) - наличие непросмотренных вопросов и отзывов от покупателей
+- [getNewFeedbacksQuestions.ts](src/tools/api/getNewFeedbacksQuestions.ts) - наличие непросмотренных вопросов и отзывов от покупателей
 - [getQuestionById.ts](src/tools/api/getQuestionById.ts) - данные вопроса по его ID
 - [getQuestions.ts](src/tools/api/getQuestions.ts) - список вопросов по заданным фильтрам
 - [getQuestionsCount.ts](src/tools/api/getQuestionsCount.ts) - количество обработанных или необработанных вопросов за 

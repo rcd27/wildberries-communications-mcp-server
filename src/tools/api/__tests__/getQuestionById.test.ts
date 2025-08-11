@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import { getQuestionById } from '../getQuestionById.js';
+import { getQuestions } from '../getQuestions.js';
 
 dotenv.config();
 
@@ -13,14 +14,29 @@ describe('getQuestionById integration test', () => {
   });
 
   it('Should get question by ID', async () => {
+    const now = Math.floor(Date.now() / 1000);
+    const oneWeekAgo = now - 7 * 24 * 3600;
+    const questions = await getQuestions(
+      {
+        isAnswered: false,
+        take: 10,
+        skip: 0,
+        dateFrom: oneWeekAgo,
+        dateTo: now,
+        order: 'dateDesc'
+      },
+      apiKey as string
+    );
+
+    const id = questions.data.questions[0].id;
     const result = await getQuestionById(
       {
-        id: '2ncBtX4B9I0UHoornoqG'
+        id: id
       },
       apiKey as string
     );
 
     expect(result.error).toBe(false);
-    expect(result.data.id).toBe('2ncBtX4B9I0UHoornoqG');
+    expect(result.data.id).toBe(id);
   });
 });
