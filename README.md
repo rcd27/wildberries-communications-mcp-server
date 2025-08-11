@@ -41,20 +41,25 @@ npx @modelcontextprotocol/inspector node ./build/index.js
 
 Сервер предоставляет следующие инструменты:
 
-[getFeedbackById.ts](src/tools/api/getFeedbackById.ts) - данные отзыва по его ID
-[getFeedbacks.ts](src/tools/api/getFeedbacks.ts) - получить список отзывов по фильтрам (например, только с ответами, сортировка по дате, пропуск и лимит)
-[getFeedbacksArchive.ts](src/tools/api/getFeedbacksArchive.ts) - возвращает список архивных отзывов
-[getFeedbacksCount.ts](src/tools/api/getFeedbacksCount.ts) - количество обработанных или необработанных отзывов за заданный период
-[getNewFeedbacks.ts](src/tools/api/getNewFeedbacks.ts) - наличие непросмотренных вопросов и отзывов от покупателей
-[getQuestionById.ts](src/tools/api/getQuestionById.ts) - данные вопроса по его ID
-[getQuestions.ts](src/tools/api/getQuestions.ts) - список вопросов по заданным фильтрам
-[getQuestionsCount.ts](src/tools/api/getQuestionsCount.ts) - количество обработанных или необработанных вопросов за заданный период
-[getSupplierValuations.ts](src/tools/api/getSupplierValuations.ts) - списки причин жалоб на отзыв и проблем с товаром
-[getUnansweredFeedbackCount.ts](src/tools/api/getUnansweredFeedbackCount.ts) - количество необработанных отзывов за сегодня и за всё время
-[getUnsansweredQuestionsCount.ts](src/tools/api/getUnsansweredQuestionsCount.ts) - общее количество неотвеченных вопросов
-[patchQuestion.ts](src/tools/api/patchQuestion.ts) - отметить вопрос как просмотренный / ответить на вопрос или 
+- [getFeedbackById.ts](src/tools/api/getFeedbackById.ts) - данные отзыва по его ID
+- [getFeedbacks.ts](src/tools/api/getFeedbacks.ts) - получить список отзывов по фильтрам (например, только с ответами,
+  сортировка по дате, пропуск и лимит)
+- [getFeedbacksArchive.ts](src/tools/api/getFeedbacksArchive.ts) - возвращает список архивных отзывов
+- [getFeedbacksCount.ts](src/tools/api/getFeedbacksCount.ts) - количество обработанных или необработанных отзывов за 
+  заданный период
+- [getNewFeedbacks.ts](src/tools/api/getNewFeedbacks.ts) - наличие непросмотренных вопросов и отзывов от покупателей
+- [getQuestionById.ts](src/tools/api/getQuestionById.ts) - данные вопроса по его ID
+- [getQuestions.ts](src/tools/api/getQuestions.ts) - список вопросов по заданным фильтрам
+- [getQuestionsCount.ts](src/tools/api/getQuestionsCount.ts) - количество обработанных или необработанных вопросов за 
+  заданный период
+- [getSupplierValuations.ts](src/tools/api/getSupplierValuations.ts) - списки причин жалоб на отзыв и проблем с товаром
+- [getUnansweredFeedbackCount.ts](src/tools/api/getUnansweredFeedbackCount.ts) - количество необработанных отзывов за 
+  сегодня и за всё время
+- [getUnsansweredQuestionsCount.ts](src/tools/api/getUnsansweredQuestionsCount.ts) - общее количество неотвеченных 
+  вопросов
+- [patchQuestion.ts](src/tools/api/patchQuestion.ts) - отметить вопрос как просмотренный / ответить на вопрос или 
 редеактировать ответ
-[postFeedbackAnswer.ts](src/tools/api/postFeedbackAnswer.ts) - ответить на отзыв покупателя
+- [postFeedbackAnswer.ts](src/tools/api/postFeedbackAnswer.ts) - ответить на отзыв покупателя
 
 #### Конфиг для Goose
 
