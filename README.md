@@ -2,7 +2,7 @@
 
 # WB Communications MCP Server
 
-MCP сервер для работы с API Communications Finances.
+MCP сервер для работы с API Wilberries Communications.
 - Описаны все ручки из OpenAPI спецификации, выставлены как `Tool` (src/tools/api)
 
 ## Установка
@@ -16,7 +16,7 @@ npm install
 1. Создайте файл `.env` в корневой директории проекта(по примеру `.env.example`)
 2. Добавьте следующие переменные окружения:
    ```
-   WB_FINANCES_OAUTH_TOKEN=your_oauth_token_here
+   WB_COMMUNICATIONS_OAUTH_TOKEN=your_oauth_token_here
    ```
 
 ## Запуск
