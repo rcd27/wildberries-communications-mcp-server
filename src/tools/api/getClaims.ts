@@ -58,11 +58,12 @@ export type GetClaimsResponse = z.infer<typeof GetClaimsResponseSchema>;
  * Функция запроса
  * ---------------------------------------- */
 
+// FIXME: для работы с возвратами нужен отдельный токен
 export async function getClaims(
   params: GetClaimsRequest,
   apiKey: string
 ): Promise<GetClaimsResponse> {
-  const response = await axios.get('https://feedbacks-api.wildberries.ru/api/v1/claims', {
+  const response = await axios.get('https://returns-api.wildberries.ru/api/v1/claims', {
     headers: {
       Authorization: apiKey,
     },
