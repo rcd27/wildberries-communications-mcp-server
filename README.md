@@ -93,3 +93,15 @@ npx @modelcontextprotocol/inspector node ./build/index.js
       "type": "stdio"
     }
 ```
+
+#### Конфиг для Cursor:
+```
+{
+  "mcpServers": {
+    "wb-communication": {
+      "command": "node",
+      "args": ["/path/to/wildberries-communications-mcp-server/build/index.js", "--api-key=eyJhbGciOiJFU..."]
+    }
+  }
+}
+```
